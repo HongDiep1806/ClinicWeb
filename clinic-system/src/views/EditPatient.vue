@@ -10,7 +10,7 @@
 
                         <div class="d-flex align-items-center mb-3">
                             <h6 class="fw-bold mb-0">
-                                <i class="ti ti-chevron-left me-1 fs-14"></i> Edit Doctor
+                                <i class="ti ti-chevron-left me-1 fs-14"></i> Edit Patient
                             </h6>
                         </div>
 
@@ -18,9 +18,9 @@
                             <div class="card-body">
 
                                 <form @submit.prevent="handleSubmit">
-                                    <h5 class="fs-18 fw-bold mb-3">Doctor Information</h5>
+                                    <h5 class="fs-18 fw-bold mb-3">Patient Information</h5>
 
-                                    <!-- Avatar Preview -->
+                                    <!-- AVATAR -->
                                     <div class="mb-3 d-flex align-items-center">
                                         <label class="form-label me-3">Profile Image</label>
                                         <div class="avatar-circle d-flex align-items-center justify-content-center"
@@ -29,19 +29,19 @@
                                         </div>
                                     </div>
 
-                                    <!-- Full Name -->
+                                    <!-- FULL NAME -->
                                     <div class="mb-3">
                                         <label class="form-label">Full Name *</label>
                                         <input v-model="form.fullName" type="text" class="form-control" required />
                                     </div>
 
-                                    <!-- Email -->
+                                    <!-- EMAIL -->
                                     <div class="mb-3">
                                         <label class="form-label">Email *</label>
                                         <input v-model="form.email" type="email" class="form-control" required />
                                     </div>
 
-                                    <!-- Phone -->
+                                    <!-- PHONE -->
                                     <div class="mb-3">
                                         <label class="form-label">Phone *</label>
                                         <input v-model="form.phone" type="text" class="form-control" required />
@@ -53,10 +53,9 @@
                                         <label class="form-label">Date of Birth</label>
                                         <VueDatePicker v-model="dobModel" type="date" :formats="{ input: 'dd.MM.yyyy' }"
                                             :time-config="{ enableTimePicker: false }" />
-
                                     </div>
 
-                                    <!-- Gender -->
+                                    <!-- GENDER -->
                                     <div class="mb-3">
                                         <label class="form-label">Gender</label>
                                         <select v-model="form.gender" class="form-control">
@@ -66,17 +65,14 @@
                                         </select>
                                     </div>
 
-                                    <!-- Address -->
-                                    <!-- Address -->
+                                    <!-- ADDRESS -->
                                     <div class="mb-3">
                                         <label class="form-label">Address</label>
-
                                         <div class="row">
-                                            <!-- Province -->
                                             <div class="col-md-6 mb-2">
-                                                <select v-model="selectedProvince" class="form-control"
-                                                    @change="onProvinceChange">
-                                                    <option value="">Select Province/City</option>
+                                                <select v-model="selectedProvince" @change="onProvinceChange"
+                                                    class="form-control">
+                                                    <option value="">Select Province</option>
                                                     <option v-for="p in provinces" :key="p.matinhBNV"
                                                         :value="p.matinhBNV">
                                                         {{ p.tentinhmoi }}
@@ -84,7 +80,6 @@
                                                 </select>
                                             </div>
 
-                                            <!-- Ward -->
                                             <div class="col-md-6 mb-2">
                                                 <select v-model="selectedWard" class="form-control">
                                                     <option value="">Select Ward</option>
@@ -97,28 +92,14 @@
                                         </div>
                                     </div>
 
-
-                                    <!-- Department -->
-                                    <div class="mb-3">
-                                        <label class="form-label">Department *</label>
-                                        <select v-model="form.departmentId" class="form-control" required>
-                                            <option value="">Select</option>
-
-                                            <option v-for="dept in departments" :key="dept.departmentId"
-                                                :value="dept.departmentId">
-                                                {{ dept.name }}
-                                            </option>
-                                        </select>
-                                    </div>
-
                                     <div class="d-flex justify-content-end gap-2">
                                         <button type="button" class="btn btn-light" @click="handleCancel">
                                             Cancel
                                         </button>
                                         <button class="btn btn-primary">Save Changes</button>
                                     </div>
-                                </form>
 
+                                </form>
                             </div>
                         </div>
 
@@ -127,64 +108,60 @@
             </div>
 
             <div class="footer text-center bg-white p-2 border-top">
-                <p class="text-dark mb-0">2025 © Preclinic</p>
+                <p class="mb-0">2025 © Preclinic</p>
             </div>
         </div>
     </div>
 </template>
 
+
 <script>
-import Sidebar from '../components/Sidebar.vue';
-import Navbar from '../components/Navbar.vue';
+import Navbar from "../components/Navbar.vue";
+import Sidebar from "../components/Sidebar.vue";
+
 import { VueDatePicker } from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
-import { getDepartments } from "../services/departmentService";
-import { getAllDoctors } from "../services/doctorService";
-import { editDoctor } from "../services/doctorService";
 import vnAddress from "../data/vietnam-address-2024.json";
+import { getAllPatients } from "../services/patientService";
+import { editPatient } from "../services/patientService";
 import { useToast } from "vue-toastification";
 
-
-
 export default {
-    name: 'EditDoctor',
-    components: { Sidebar, Navbar, VueDatePicker },
+    name: "EditPatient",
+    components: { Navbar, Sidebar, VueDatePicker },
 
     data() {
         return {
+            userId: null,
             form: {
                 userId: null,
                 fullName: "",
                 gender: "",
                 phone: "",
-                address: "",
                 email: "",
-                departmentId: ""
+                address: "",
+                roleId: 5,
+                departmentId: null
             },
 
             dobModel: null,
-            today: new Date(),
-            departments: [],
-            errors: {
-                phone: "",
-            },
+
             selectedProvince: "",
             selectedWard: "",
             provinces: vnAddress,
             wards: [],
 
+            errors: {
+                phone: "",
+            }
         };
     },
 
     async mounted() {
-        const doctorId = this.$route.params.id;
-        this.userId = doctorId;
-        await this.loadDepartments();
-        console.log("PARAM ID =", this.$route.params.id);
+        this.userId = this.$route.params.id;
 
-        await this.loadDoctor(doctorId);
-
+        await this.loadPatient(this.userId);
     },
 
     methods: {
@@ -192,137 +169,130 @@ export default {
             this.$router.back();   // hoặc this.$router.push("/doctors")
         },
 
-        onProvinceChange() {
-            const province = this.provinces.find(p => p.matinhBNV === this.selectedProvince);
-            this.wards = province ? province.phuongxa : [];
-            this.selectedWard = "";
-        },
-        buildAddress() {
-            const province = this.provinces.find(p => p.matinhBNV === this.selectedProvince);
-            const ward = this.wards.find(w => w.maphuongxa === this.selectedWard);
+        // Load patient from getAllPatients
+        async loadPatient(id) {
+            const res = await getAllPatients();
+            const list = Array.isArray(res.data) ? res.data : res;
 
-            if (!province || !ward) return "";
+            const p = list.find(x => x.userId == id);
 
-            return `${ward.tenphuongxa}, ${province.tentinhmoi}`;
-        },
-
-
-        async loadDepartments() {
-            this.departments = await getDepartments();
-        },
-
-        async loadDoctor(id) {
-            const res = await getAllDoctors();
-
-            // Backend trả về dạng { data: [...] } hay chỉ là array?
-            const list = res.data ?? res;
-
-            const doctor = list.find(d => d.userId == id);
-
-            if (!doctor) {
-                alert("Doctor not found");
-                this.$router.push("/doctors");
+            if (!p) {
+                alert("Patient not found");
+                this.$router.push("/patients");
                 return;
             }
 
+            // Fill form
             this.form = {
-                userId: doctor.userId,
-                fullName: doctor.fullName,
-                gender: doctor.gender,
-                phone: doctor.phone,
-                address: doctor.address,
-                email: doctor.email,
-                departmentId: doctor.departmentId
+                userId: p.userId,
+                fullName: p.fullName,
+                gender: p.gender,
+                phone: p.phone,
+                email: p.email,
+                address: p.address,
+                roleId: 5,
+                departmentId: null
             };
 
-            this.dobModel = doctor.dob ? doctor.dob.split("T")[0] : null;
-            if (doctor.address) {
-                const parts = doctor.address.split(",").map(x => x.trim());
-                const wardName = parts[0];
-                const provinceName = parts[1];
+            this.dobModel = p.dob ? p.dob.split("T")[0] : null;
 
-                const province = this.provinces.find(p => p.tentinhmoi === provinceName);
+            // Parse address
+            if (p.address) {
+                const [wardName, provinceName] = p.address.split(",").map(x => x.trim());
+
+                const province = this.provinces.find(pr => pr.tentinhmoi === provinceName);
                 if (province) {
                     this.selectedProvince = province.matinhBNV;
                     this.wards = province.phuongxa;
 
                     const ward = this.wards.find(w => w.tenphuongxa === wardName);
-                    if (ward) {
-                        this.selectedWard = ward.maphuongxa;
-                    }
+                    if (ward) this.selectedWard = ward.maphuongxa;
                 }
             }
         },
 
+        // Address builder
+        buildAddress() {
+            const p = this.provinces.find(p => p.matinhBNV === this.selectedProvince);
+            const w = this.wards.find(w => w.maphuongxa === this.selectedWard);
+            return p && w ? `${w.tenphuongxa}, ${p.tentinhmoi}` : "";
+        },
+
+        onProvinceChange() {
+            const province = this.provinces.find(p => p.matinhBNV === this.selectedProvince);
+            this.wards = province ? province.phuongxa : [];
+            this.selectedWard = "";
+        },
 
         formatDate(date) {
             if (!date) return null;
             const d = new Date(date);
-            return `${d.getFullYear()}-${(d.getMonth() + 1)
-                .toString()
-                .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+                d.getDate()
+            ).padStart(2, "0")}`;
         },
 
         async handleSubmit() {
-            this.errors.phone = "";
             const toast = useToast();
+            this.errors.phone = "";
 
             if (!this.form.phone || this.form.phone.length < 9) {
-                this.errors.phone = "Invalid phone number.";
+                this.errors.phone = "Invalid phone number";
                 return;
             }
 
             const payload = {
                 userId: this.form.userId,
                 fullName: this.form.fullName,
-                dob: this.dobModel ? this.formatDate(this.dobModel) : null,
                 gender: this.form.gender,
                 phone: this.form.phone,
-                address: this.buildAddress(),
                 email: this.form.email,
-                departmentId: Number(this.form.departmentId)
+                dob: this.dobModel ? this.formatDate(this.dobModel) : null,
+                address: this.buildAddress(),
+                roleId: 5,
+                departmentId: null
             };
 
             try {
-                await editDoctor(this.userId, payload);
-
-                toast.success("Doctor edited successfully!");
-                this.$router.push("/doctors");
-            }
-            catch (err) {
-                if (err.response && err.response.status === 409) {
-                    toast.error("Email already exists. Please choose another.");
-                    return;
+                await editPatient(this.userId, payload);
+                toast.success("Patient updated successfully!");
+                this.$router.push("/patients");
+            } catch (e) {
+                if (e.response?.status === 409 && e.response.data?.message === "EMAIL_IN_USE") {
+                    toast.error("Email already exists!");
+                } else {
+                    toast.error("Failed to update patient!");
                 }
-
-                toast.error("Failed to update doctor.");
+                console.error(e);
             }
+
         }
-
-
     },
 
     computed: {
         avatarInitial() {
-            if (!this.form.fullName) return "?";
-            return this.form.fullName.charAt(0).toUpperCase();
+            return this.form.fullName
+                ? this.form.fullName.charAt(0).toUpperCase()
+                : "?";
         },
 
         avatarColor() {
-            if (!this.form.fullName) return "#6c757d";
-            return "#858796";
+            return this.form.fullName ? "#858796" : "#6c757d";
         }
     }
 };
 </script>
 
-<style>
+<style scoped>
 .avatar-circle {
-    width: 70px;
-    height: 70px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
-    font-size: 28px;
-    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 18px;
     color: white;
 }
 </style>

@@ -81,18 +81,22 @@
 
 
                                     <!-- DOB -->
+                                    <!-- DOB -->
                                     <div class="mb-3">
-                                        <label class="form-label">Date of Birth</label>
+                                        <label class="form-label">Date of Birth *</label>
+
                                         <VueDatePicker v-model="dobModel" type="date" :formats="{ input: 'dd.MM.yyyy' }"
-                                            :time-config="{ enableTimePicker: false }" />
+                                            :time-config="{ enableTimePicker: false }"
+                                            :class="{ 'is-invalid': errors.dob }" />
 
-
+                                        <small v-if="errors.dob" class="text-danger">{{ errors.dob }}</small>
                                     </div>
+
 
                                     <!-- Gender -->
                                     <div class="mb-3">
                                         <label class="form-label">Gender</label>
-                                        <select v-model="form.gender" class="form-control">
+                                        <select v-model="form.gender" class="form-control" required>
                                             <option value="">Select</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
@@ -101,15 +105,13 @@
 
                                     <!-- Address -->
                                     <!-- Address -->
-                                    <!-- Address -->
                                     <div class="mb-3">
-                                        <label class="form-label">Address</label>
+                                        <label class="form-label">Address *</label>
 
                                         <div class="row">
-                                            <!-- Province -->
                                             <div class="col-md-6 mb-2">
-                                                <select v-model="selectedProvince" class="form-control"
-                                                    @change="onProvinceChange">
+                                                <select v-model="selectedProvince" @change="onProvinceChange"
+                                                    class="form-control" :class="{ 'is-invalid': errors.address }">
                                                     <option value="">Select Province/City</option>
                                                     <option v-for="p in provinces" :key="p.matinhBNV"
                                                         :value="p.matinhBNV">
@@ -118,9 +120,9 @@
                                                 </select>
                                             </div>
 
-                                            <!-- Ward -->
                                             <div class="col-md-6 mb-2">
-                                                <select v-model="selectedWard" class="form-control">
+                                                <select v-model="selectedWard" class="form-control"
+                                                    :class="{ 'is-invalid': errors.address }">
                                                     <option value="">Select Ward</option>
                                                     <option v-for="w in wards" :key="w.maphuongxa"
                                                         :value="w.maphuongxa">
@@ -129,7 +131,10 @@
                                                 </select>
                                             </div>
                                         </div>
+
+                                        <small v-if="errors.address" class="text-danger">{{ errors.address }}</small>
                                     </div>
+
 
 
                                     <!-- Department -->
@@ -156,7 +161,9 @@
                                     </div> -->
 
                                     <div class="d-flex justify-content-end gap-2">
-                                        <button class="btn btn-light">Cancel</button>
+                                        <button type="button" class="btn btn-light" @click="handleCancel">
+                                            Cancel
+                                        </button>
                                         <button class="btn btn-primary">Add Doctor</button>
                                     </div>
                                 </form>
@@ -238,6 +245,10 @@ export default {
 
 
     methods: {
+        handleCancel() {
+            this.$router.back();   // hoặc this.$router.push("/doctors")
+        },
+
 
         buildAddress() {
             const province = this.provinces.find(p => p.matinhBNV === this.selectedProvince);
@@ -261,37 +272,52 @@ export default {
 
         formatDate(date) {
             if (!date) return null;
+
             const d = new Date(date);
+            if (isNaN(d.getTime())) return null;  // <-- chống Invalid Date
+
             const month = (d.getMonth() + 1).toString().padStart(2, "0");
             const day = d.getDate().toString().padStart(2, "0");
             return `${d.getFullYear()}-${month}-${day}`;
-        },
+        }
+        ,
 
         async handleSubmit() {
-            this.errors = { password: "", confirmPassword: "", phone: "" };
+            this.errors = { password: "", confirmPassword: "", phone: "", dob: "", address: "" };
             const toast = useToast();
 
-
-            // Validate password length
+            /* ===== PASSWORD ===== */
             if (!this.form.password || this.form.password.length < 6) {
                 this.errors.password = "Password must be at least 6 characters.";
                 return;
             }
 
-            // Validate confirm password
             if (this.confirmPassword !== this.form.password) {
                 this.errors.confirmPassword = "Passwords do not match.";
                 return;
             }
 
-            // Validate phone
+            /* ===== PHONE ===== */
             if (!this.form.phone || this.form.phone.length < 10) {
                 this.errors.phone = "Invalid phone number.";
                 return;
             }
 
+            /* ===== DOB ===== */
+            if (!this.dobModel || this.dobModel === "" || this.dobModel === null) {
+                this.errors.dob = "Date of birth is required.";
+                return;
+            }
+
+
+            /* ===== ADDRESS ===== */
+            if (!this.selectedProvince || !this.selectedWard) {
+                this.errors.address = "Please select full address.";
+                return;
+            }
+
             try {
-                const dobFormatted = this.dobModel ? this.formatDate(this.dobModel) : null;
+                const dobFormatted = this.formatDate(this.dobModel);
 
                 const payload = {
                     fullName: this.form.fullName,
@@ -305,18 +331,19 @@ export default {
                     roleId: Number(this.form.roleId)
                 };
 
-                console.log("payload sending: ", payload);
-
                 await createDoctor(payload);
                 toast.success("Doctor created successfully!");
                 this.$router.push("/doctors");
 
             } catch (error) {
-                toast.error("Failed to create doctor!");
-
+                if (error.response?.status === 409 && error.response.data?.message === "EMAIL_IN_USE") {
+                    toast.error("Email already exists!");
+                } else {
+                    toast.error("Failed to create doctor!");
+                }
                 console.error("API FAILED:", error);
             }
-        },
+        }
 
 
 
@@ -349,5 +376,10 @@ export default {
     font-size: 28px;
     font-weight: bold;
     color: white;
+}
+
+.is-invalid {
+    border: 1px solid #dc3545 !important;
+    border-radius: 6px !important;
 }
 </style>

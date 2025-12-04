@@ -1,359 +1,297 @@
 <template>
-    <!-- Begin Wrapper -->
-    <div class="main-wrapper">
+  <div class="main-wrapper">
+    <Navbar />
+    <SideBar />
 
-        <!-- Topbar Start -->
-        <Navbar />
-        <!-- Topbar End -->
+    <div class="page-wrapper">
+      <div class="content">
 
-        <!-- Search Modal -->
-        <div class="modal fade" id="searchModal">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content bg-transparent">
-                    <div class="card shadow-none mb-0">
-                        <div class="px-3 py-2 d-flex flex-row align-items-center" id="search-top">
-                            <i class="ti ti-search fs-22"></i>
-                            <input type="search" class="form-control border-0" placeholder="Search">
-                            <button type="button" class="btn p-0" data-bs-dismiss="modal" aria-label="Close"><i
-                                    class="ti ti-x fs-22"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- HEADER -->
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
+          <div>
+            <h4 class="fw-bold mb-0">Doctors</h4>
+            <p class="text-muted mb-0 fs-13">Manage all doctors in your clinic</p>
+          </div>
+          <router-link to="/add-doctor" class="btn btn-primary fs-13">
+            <i class="ti ti-plus me-1"></i> Add Doctor
+          </router-link>
         </div>
 
-        <!-- Sidenav Menu Start -->
-        <SideBar />
-        <!-- Sidenav Menu End -->
-
-        <!-- ========================
-			Start Page Content
-		========================= -->
-
-        <div class="page-wrapper">
-
-            <!-- Start Content -->
-            <div class="content">
-
-                <!-- Start Page Header -->
-                <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 mb-3">
-                    <div class="flex-grow-1">
-                        <h4 class="fw-bold mb-0"> Doctor Grid <span
-                                class="badge badge-soft-primary fs-13 fw-medium ms-2">Total Doctors : 565</span></h4>
-                    </div>
-                    <div class="text-end d-flex">
-                        <!-- <div class="dropdown me-2">
-                            <a href="javascript:void(0);"
-                                class="btn btn-white bg-white fs-14 py-1 border d-inline-flex text-dark align-items-center"
-                                data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                                <i class="ti ti-filter text-gray-5 me-1"></i>Filters
-                            </a>
-                            <div class="dropdown-menu dropdown-lg dropdown-menu-end filter-dropdown p-0"
-                                id="filter-dropdown">
-                                <div
-                                    class="d-flex align-items-center justify-content-between border-bottom filter-header">
-                                    <h4 class="mb-0">Filter</h4>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);"
-                                            class="link-danger text-decoration-underline">Clear All</a>
-                                    </div>
-                                </div>
-                                <form action="#">
-                                    <div class="filter-body pb-0">
-                                        <div class="mb-3">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <label class="form-label">Doctor</label>
-                                                <a href="javascript:void(0);" class="link-primary mb-1">Reset</a>
-                                            </div>
-                                            <select class="select2" multiple="multiple">
-                                                <option value="m-1" selected>Dr. Mick Thompson</option>
-                                                <option value="m-2">Dr. Sarah Johnson</option>
-                                                <option value="m-3">Dr. Emily Carter</option>
-                                                <option value="m-4">Dr. David Lee</option>
-                                                <option value="m-5">Dr. Anna Kim</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <label class="form-label">Designation</label>
-                                                <a href="javascript:void(0);" class="link-primary mb-1">Reset</a>
-                                            </div>
-                                            <select class="select2" multiple="multiple">
-                                                <option value="m-1" selected>Cardiologist</option>
-                                                <option value="m-2">Orthopedic Surgeon</option>
-                                                <option value="m-3">Pediatrician</option>
-                                                <option value="m-4">Gynecologist</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <label class="form-label">Department</label>
-                                                <a href="javascript:void(0);" class="link-primary mb-1">Reset</a>
-                                            </div>
-                                            <select class="select2" multiple="multiple">
-                                                <option value="m-1" selected>Cardiology</option>
-                                                <option value="m-2">Orthopedics</option>
-                                                <option value="m-3">Pediatrics</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label mb-1 text-dark fs-14 fw-medium">Date<span
-                                                    class="text-danger">*</span></label>
-                                            <div class="input-icon-end position-relative">
-                                                <input type="text" class="form-control datetimepicker"
-                                                    placeholder="dd/mm/yyyy">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-calendar"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <label class="form-label">Amount</label>
-                                                <a href="javascript:void(0);" class="link-primary mb-1">Reset</a>
-                                            </div>
-                                            <select class="select2" multiple="multiple">
-                                                <option value="m-1" selected>$501 - $1000</option>
-                                                <option value="m-2">$501 - $1100</option>
-                                                <option value="m-3">$701 - $1200</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <label class="form-label">Status</label>
-                                                <a href="javascript:void(0);" class="link-primary mb-1">Reset</a>
-                                            </div>
-                                            <select class="select2" multiple="multiple">
-                                                <option value="m-1" selected>Available</option>
-                                                <option value="m-2">Unavailable</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="filter-footer d-flex align-items-center justify-content-end border-top">
-                                        <a href="javascript:void(0);" class="btn btn-light btn-md me-2"
-                                            id="close-filter">Close</a>
-                                        <button type="submit" class="btn btn-primary btn-md">Filter</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div> -->
-
-                        <router-link to="/add-doctor" class="btn btn-primary ms-2 fs-13 btn-md">
-                            <i class="ti ti-plus me-1"></i> New Doctor
-                        </router-link>
-
-
-                    </div>
-                </div>
-                <!-- End Page Header -->
-
-                <div class="row">
-
-                    <div class="col-xl-4 col-md-6" v-for="doctor in doctors" :key="doctor.id">
-                        <div class="card">
-                            <div class="card-body d-flex align-items-center flex-sm-nowrap flex-wrap row-gap-3">
-                                <div class="doctor-avatar-wrapper">
-                                    <div class="avatar-circle-list"
-                                        :style="{ backgroundColor: getColor(doctor.fullName) }">
-                                        <span class="avatar-initial-list">{{ getInitial(doctor.fullName) }}</span>
-                                    </div>
-                                </div>
-
-
-                                <div class="flex-fill">
-                                    <div class="d-flex align-items-center justify-content-between mb-1">
-                                        <h6 class="mb-0 fw-semibold"><a href="doctor-details.html">{{ doctor.fullName
-                                        }}</a></h6>
-                                        <div class="action-item">
-                                            <a href="javascript:void(0);" data-bs-toggle="dropdown">
-                                                <i class="ti ti-dots-vertical"></i>
-                                            </a>
-                                            <ul class="dropdown-menu">
-                                                <li>
-                                                    <router-link :to="`/edit-doctor/${doctor.userId}`"
-                                                        class="dropdown-item d-flex align-items-center">
-                                                        Edit
-                                                    </router-link>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);"
-                                                        class="dropdown-item d-flex align-items-center"
-                                                        data-bs-toggle="modal" data-bs-target="#delete_modal">Delete</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <span class="d-block mb-2 fs-13">{{ doctor.email }}</span>
-                                    <p class="mb-2 fs-13">Gender : {{ doctor.gender }}</p>
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <h6 class="text-primary fs-14 mb-0"><span
-                                                class="text-muted fs-13 fw-normal">Address : </span> {{ doctor.address
-                                            }}</h6>
-                                        <a href="appointment-calendar.html"
-                                            class="avatar avatar-xs border text-muted fs-14"><i
-                                                class="ti ti-calendar-cog"></i></a>
-                                    </div>
-                                </div>
-                            </div><!-- end card body -->
-                        </div><!-- end card -->
-                    </div><!-- end col -->
-                </div>
-
-                <div class="text-center">
-                    <a href="#" class="btn btn-white bg-white text-dark fs-13">Load More<span
-                            class="spinner-border spinner-border-sm ms-1"></span></a>
-                </div>
-
-            </div>
-            <!-- End Content -->
-
-            <!-- Footer Start -->
-            <div class="footer text-center bg-white p-2 border-top">
-                <p class="text-dark mb-0">2025 &copy; <a href="javascript:void(0);" class="link-primary">Preclinic</a>,
-                    All Rights Reserved</p>
-            </div>
-            <!-- Footer End -->
-
+        <!-- FILTERS -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <input v-model="searchText" type="text" class="form-control w-auto" placeholder="Search doctor..." style="max-width:220px">
+          <select v-model="selectedDepartment" class="form-select w-auto" style="max-width:200px">
+            <option value="">All Departments</option>
+            <option v-for="d in departments" :key="d.departmentId" :value="d.departmentId">{{ d.name }}</option>
+          </select>
+          <select v-model="selectedStatus" class="form-select w-auto" style="max-width:150px">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
         </div>
 
-        <!-- ========================
-			End Page Content
-		========================= -->
+        <!-- DOCTOR GRID -->
+        <div class="row">
+          <div v-for="d in paginatedDoctors" :key="d.userId" class="col-xl-4 col-md-6 mb-3">
+            <div class="card doctor-card shadow-sm">
+              <div class="card-body d-flex align-items-center">
 
-        <!-- Start Delete Modal  -->
-        <div class="modal fade" id="delete_modal">
-            <div class="modal-dialog modal-dialog-centered modal-sm">
-                <div class="modal-content">
-                    <div class="modal-body text-center position-relative z-1">
-                        <img src="/img/bg/delete-modal-bg-01.png" alt=""
-                            class="img-fluid position-absolute top-0 start-0 z-n1">
-                        <img src="/img/bg/delete-modal-bg-02.png" alt=""
-                            class="img-fluid position-absolute bottom-0 end-0 z-n1">
-                        <div class="mb-3">
-                            <span class="avatar avatar-lg bg-danger text-white"><i class="ti ti-trash fs-24"></i></span>
-                        </div>
-                        <h5 class="fw-bold mb-1">Delete Confirmation</h5>
-                        <p class="mb-3">Are you sure want to delete?</p>
-                        <div class="d-flex justify-content-center">
-                            <a href="javascript:void(0);" class="btn btn-light position-relative z-1 me-3"
-                                data-bs-dismiss="modal">Cancel</a>
-                            <a href="doctors.html" class="btn btn-danger position-relative z-1">Yes, Delete</a>
-                        </div>
-                    </div>
+                <!-- AVATAR -->
+                <div class="doctor-avatar">
+                  <div class="avatar-circle" :style="{ backgroundColor: getColor(d.fullName) }">
+                    {{ getInitial(d.fullName) }}
+                  </div>
                 </div>
-            </div>
-        </div>
-        <!-- End Delete Modal  -->
 
-        <!-- Start Delete Modal  -->
-        <div class="modal fade" id="success_modal">
-            <div class="modal-dialog modal-dialog-centered modal-sm">
-                <div class="modal-content">
-                    <div class="modal-body text-center position-relative z-1">
-                        <div class="mb-3">
-                            <span class="avatar avatar-lg bg-success text-white"><i
-                                    class="ti ti-check fs-24"></i></span>
-                        </div>
-                        <h5 class="fw-bold mb-1">Added Successfully</h5>
-                        <p class="mb-3">Doctor has been added to your List</p>
-                        <div class="d-flex justify-content-center">
-                            <a href="javascript:void(0);" class="btn btn-light position-relative z-1 me-3"
-                                data-bs-dismiss="modal">Cancel</a>
-                            <a href="doctor-details.html" class="btn btn-primary position-relative z-1">View Details</a>
-                        </div>
+                <!-- INFO -->
+                <div class="flex-fill">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-semibold">
+                      {{ d.fullName }}
+                      <i v-if="!d.isActive" class="ti ti-alert-circle text-danger ms-1" title="Inactive doctor"></i>
+                    </h6>
+
+                    <!-- DROPDOWN -->
+                    <div class="dropdown">
+                      <a href="#" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                      <ul class="dropdown-menu dropdown-menu-end">
+                        <li v-if="d.isActive">
+                          <router-link :to="`/edit-doctor/${d.userId}`" class="dropdown-item">
+                            <i class="ti ti-edit me-1"></i> Edit
+                          </router-link>
+                        </li>
+                        <li>
+                          <button class="dropdown-item" @click="openToggleConfirm(d)" :disabled="loading">
+                            <i :class="d.isActive ? 'ti ti-ban' : 'ti ti-check'"></i>
+                            {{ d.isActive ? "Deactivate" : "Activate" }}
+                          </button>
+                        </li>
+                        <li>
+                          <button class="dropdown-item" @click="openView(d)">
+                            <i class="ti ti-user"></i> View Details
+                          </button>
+                        </li>
+                      </ul>
                     </div>
-                </div>
-            </div>
-        </div>
-        <!-- End Delete Modal  -->
+                  </div>
 
+                  <div class="text-muted fs-13">{{ d.email }}</div>
+                  <div class="fs-13">Gender: {{ d.gender }}</div>
+                  <div class="fs-13">Department: {{ d.departmentName || "N/A" }}</div>
+
+                 <span class="badge fs-13 mt-1" :class="d.isActive ? 'badge-soft-success' : 'badge-soft-danger'">
+  {{ d.isActive ? "Active" : "Inactive" }}
+</span>
+
+
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="d-flex justify-content-center mt-3">
+          <ul class="pagination">
+            <li class="page-item" :class="{ disabled: currentPage===1 }">
+              <button class="page-link" @click="currentPage--">Previous</button>
+            </li>
+            <li v-for="n in totalPages" :key="n" class="page-item" :class="{ active: n===currentPage }">
+              <button class="page-link" @click="currentPage=n">{{ n }}</button>
+            </li>
+            <li class="page-item" :class="{ disabled: currentPage===totalPages }">
+              <button class="page-link" @click="currentPage++">Next</button>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer text-center bg-white p-2 border-top">
+        <p class="mb-0">2025 © Preclinic</p>
+      </div>
     </div>
-    <!-- End Wrapper -->
+
+    <!-- VIEW MODAL -->
+    <div class="modal fade" id="view_modal">
+      <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">Doctor Details</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" v-if="selectedDoctor">
+            <div class="d-flex align-items-center mb-3">
+              <div class="avatar-circle me-3" :style="{ backgroundColor: getColor(selectedDoctor.fullName) }">{{ getInitial(selectedDoctor.fullName) }}</div>
+              <div>
+                <h6 class="fw-bold mb-0">{{ selectedDoctor.fullName }}</h6>
+                <small class="text-muted">{{ selectedDoctor.gender }}</small>
+              </div>
+            </div>
+            <ul class="list-group">
+              <li class="list-group-item d-flex justify-content-between"><span>Email</span><span>{{ selectedDoctor.email }}</span></li>
+              <li class="list-group-item d-flex justify-content-between"><span>Phone</span><span>{{ selectedDoctor.phone }}</span></li>
+              <li class="list-group-item d-flex justify-content-between"><span>Address</span><span>{{ selectedDoctor.address }}</span></li>
+              <li class="list-group-item d-flex justify-content-between"><span>Department</span><span>{{ selectedDoctor.departmentName }}</span></li>
+              <li class="list-group-item d-flex justify-content-between"><span>Status</span><span :class="selectedDoctor.isActive?'text-success':'text-danger'">{{ selectedDoctor.isActive?"Active":"Inactive" }}</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ERROR MODAL -->
+    <div class="modal fade" id="error_modal">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content p-3 text-center">
+          <i class="ti ti-alert-triangle text-warning" style="font-size:48px"></i>
+          <h5 class="fw-bold mt-2 mb-1">Action Failed</h5>
+          <p class="text-muted mb-3">{{ errorMessage }}</p>
+          <button class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIRM TOGGLE MODAL -->
+    <div class="modal fade" id="toggle_modal">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-body text-center">
+            <h5 class="fw-bold mb-2">{{ toggleTarget?.isActive?"Deactivate Doctor":"Activate Doctor" }}</h5>
+            <p class="text-muted">{{ toggleTarget?.isActive?"Are you sure you want to deactivate this doctor?":"Restore this doctor to active status?" }}</p>
+            <div class="d-flex justify-content-center">
+              <button class="btn btn-light me-2" data-bs-dismiss="modal">Cancel</button>
+              <button class="btn btn-primary" @click="confirmToggle" data-bs-dismiss="modal" :disabled="loading">Confirm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAIL MODAL -->
+    <div class="modal fade" id="email_modal">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content p-3">
+          <h5 class="fw-bold mb-2">Email Conflict</h5>
+          <p class="text-muted fs-14">This email is already in use. Enter a new one to restore the doctor.</p>
+          <label class="form-label mt-2">New Email</label>
+          <input v-model="newEmail" type="email" class="form-control mb-2">
+          <div class="text-end">
+            <button class="btn btn-light me-2" data-bs-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" @click="confirmRestoreEmail">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div v-if="loading" class="loading-overlay">
+      <div class="spinner-border text-primary"></div>
+    </div>
+  </div>
 </template>
+
 <script>
-import SideBar from '../components/Sidebar.vue';
-import Navbar from '../components/Navbar.vue';
-import axiosInstance from '../api/axiosInstance';
-import axios from 'axios';
-import router from '../router';
+import Navbar from "../components/Navbar.vue";
+import SideBar from "../components/Sidebar.vue";
+import axiosInstance from "../api/axiosInstance";
+import { getDepartments } from "../services/departmentService";
+import { useToast } from "vue-toastification";
+import {getAllDoctors} from "../services/doctorService";
+
 export default {
-    name: 'Doctors',
-    components: {
-        SideBar, Navbar
-    },
-    data() {
-        return {
-            doctors: []
+  name: "Doctors",
+  components:{Navbar,SideBar},
+  data(){return{
+    doctors:[],departments:[],selectedDoctor:null,
+    searchText:"",selectedDepartment:"",selectedStatus:"",
+    viewModal:null,errorModal:null,toggleModal:null,emailModal:null,
+    toggleTarget:null,errorMessage:"",oldEmail:"",newEmail:"",
+    currentPage:1,pageSize:9,loading:false
+  }},
+  computed:{
+    filteredDoctors(){ return this.doctors.filter(d=>{
+      const matchName=d.fullName.toLowerCase().includes(this.searchText.toLowerCase());
+      const matchDept=!this.selectedDepartment||d.departmentId==this.selectedDepartment;
+      const matchStatus=!this.selectedStatus||(this.selectedStatus==="Active"&&d.isActive)||(this.selectedStatus==="Inactive"&&!d.isActive);
+      return matchName&&matchDept&&matchStatus;
+    })},
+    totalPages(){ return Math.ceil(this.filteredDoctors.length/this.pageSize)},
+    paginatedDoctors(){ const start=(this.currentPage-1)*this.pageSize; return this.filteredDoctors.slice(start,start+this.pageSize)}
+  },
+  methods:{
+    getInitial(name){return name?name.charAt(0).toUpperCase():"?"},
+    getColor(name){const colors=["#4e73df","#1cc88a","#36b9cc","#f6c23e","#e74a3b","#858796"];let hash=0;for(let i=0;i<name.length;i++){hash=name.charCodeAt(i)+((hash<<5)-hash);}return colors[Math.abs(hash)%colors.length]},
+    openView(doctor){this.selectedDoctor=doctor;this.viewModal.show()},
+    openToggleConfirm(doctor){this.toggleTarget=doctor;this.toggleModal.show()},
+    openError(msg){this.errorMessage=msg;this.errorModal.show()},
+    async confirmToggle(){
+      const toast=useToast();this.loading=true;
+      try{
+        const res=await axiosInstance.put(`/User/toggle-status/${this.toggleTarget.userId}`);
+        toast.success(this.toggleTarget.isActive?"Doctor deactivated":"Doctor activated");
+        await this.loadDoctors();
+      }catch(err){
+        const res=err.response;
+        if(res?.status===409){
+          const msg=res.data?.message;
+          if(msg==="EMAIL_CONFLICT"){this.oldEmail=this.toggleTarget.email;this.emailModal.show();this.loading=false;return}
+          if(msg==="DOCTOR_HAS_CONFIRMED_APPOINTMENTS"){this.openError("This doctor still has confirmed appointments. They must be completed or reassigned before deactivation.");this.loading=false;return}
+          if(msg==="DOCTOR_HAS_PENDING_APPOINTMENTS"){this.openError("This doctor has pending appointments. Please cancel or reassign them.");this.loading=false;return}
+          this.openError(msg||"Cannot update doctor status");this.loading=false;return
         }
+        toast.error("Failed to update doctor status");
+      }
+      this.loading=false;
     },
-    methods: {
-        async doctorList() {
-            await axiosInstance.get('/User/get-all-doctors')
-                .then(response => {
-                    this.doctors = response.data;
-                })
-                .catch(error => {
-                    console.error('Load doctors failed:', error);
-                });
-        },
-        // Lấy chữ cái đầu
-        getInitial(name) {
-            if (!name) return "?";
-            return name.charAt(0).toUpperCase();
-        },
-
-        // Tạo màu avatar ổn định từ tên
-        getColor(name) {
-            if (!name) return "#6c757d";
-            const colors = ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#858796"];
-            let hash = 0;
-            for (let i = 0; i < name.length; i++) {
-                hash = name.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            return colors[Math.abs(hash) % colors.length];
-        }
-
+    async confirmRestoreEmail(){
+      const toast=useToast();
+      try{
+        await axiosInstance.put(`/User/restore-with-email/${this.toggleTarget.userId}`,{newEmail:this.newEmail});
+        toast.success("Doctor restored successfully");
+        this.newEmail="";this.emailModal.hide();await this.loadDoctors();
+      }catch(err){if(err.response?.data==="EMAIL_IN_USE"){toast.error("Email already in use.");return}toast.error("Restore failed.");}
     },
-    mounted() {
-        this.doctorList();
+    async loadDepartments(){this.departments=await getDepartments()},
+    async loadDoctors() {
+  const res = await getAllDoctors();
+  console.log(res);
+
+  const map = new Map();
+  res.data.forEach(d => {
+    if (!map.has(d.userId)) {
+      map.set(d.userId, {
+        ...d,
+        // map trực tiếp từ API status
+        isActive: d.status === "Active",
+        departmentName: this.departments.find(x => x.departmentId == d.departmentId)?.name || "N/A"
+      });
     }
+  });
+
+  this.doctors = [...map.values()];
+}
+
+
+  },
+  async mounted(){
+    this.viewModal=new bootstrap.Modal("#view_modal");
+    this.errorModal=new bootstrap.Modal("#error_modal");
+    this.toggleModal=new bootstrap.Modal("#toggle_modal");
+    this.emailModal=new bootstrap.Modal("#email_modal");
+    await this.loadDepartments();await this.loadDoctors();
+  }
 }
 </script>
-<style>
-.avatar-circle-list {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    font-size: 22px;
-    font-weight: bold;
-    color: white;
-}
 
-.avatar-initial-list {
-    transform: translateY(2px);
-}
-
-.doctor-avatar-wrapper {
-    margin-right: 20px;
-    /* giống khoảng cách của template */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.avatar-circle-list {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    font-size: 22px;
-    font-weight: 600;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.avatar-initial-list {
-    transform: translateY(1px);
-}
+<style scoped>
+.doctor-card{border-radius:10px}
+.avatar-circle{width:55px;height:55px;border-radius:50%;font-size:22px;font-weight:bold;color:white;display:flex;align-items:center;justify-content:center}
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.6);display:flex;justify-content:center;align-items:center;z-index:9999}
+.badge-soft-success{background:#e7f8ef;color:#28a745}
+.badge-soft-danger{background:#fdeaea;color:#dc3545}
+.dropdown-item i{margin-right:6px}
 </style>

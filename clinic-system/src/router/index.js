@@ -9,6 +9,12 @@ import Doctors from "../views/Doctors.vue";
 import AddDoctor from "../views/AddDoctor.vue";
 import DoctorSchedule from "../views/DoctorSchedule.vue";
 import EditDoctor from "../views/EditDoctor.vue";
+import Patients from "../views/Patients.vue";
+import AddPatient from "../views/AddPatient.vue";
+import EditPatient from "../views/EditPatient.vue";
+import Appointments from "../views/Appointments.vue";
+import AddAppointments from "../views/AddAppointments.vue";
+import Departments from "../views/Departments.vue";
 
 // ================== CẤU HÌNH ROUTES ==================
 const routes = [
@@ -64,7 +70,47 @@ const routes = [
   name: "edit-doctor",
   component: EditDoctor,
   meta: { requiresAuth: true },
-}
+},
+{
+  path: "/patients",
+  name: "patients",
+  component: Patients,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/add-patient",
+  name: "add-patient",
+  component: AddPatient,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/edit-patient/:id",
+  name: "edit-patient",
+  component: EditPatient,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/appointments",
+  name: "appointments",
+  component: Appointments,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/add-appointment",
+  name: "add-appointment",
+  component: AddAppointments,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/departments",
+  name: "departments",
+  component: Departments,
+  meta: { requiresAuth: true },
+},
+
+
+
+
 
 ];
 

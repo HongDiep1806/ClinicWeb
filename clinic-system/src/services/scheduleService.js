@@ -16,3 +16,6 @@ export const getScheduleByDoctor = (doctorId) => {
 export const deleteSchedule = (scheduleId) => {
   return axiosInstance.delete(`/Schedule/delete/${scheduleId}`);
 };
+
+export const getDoctorsByWeekday = (weekday) =>
+  axiosInstance.get(`/Schedule/doctors-by-weekday/${weekday}`);

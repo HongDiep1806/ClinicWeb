@@ -176,9 +176,8 @@
                                     <span class="menu-arrow"></span>
                                 </a>
                                 <ul>
-                                    <li><a href="patients.html">Patients</a></li>
-                                    <li><a href="patient-details.html">Patient Details</a></li>
-                                    <li><a href="create-patient.html">Create Patient</a></li>
+                                    <li><router-link to="/patients">Patients</router-link></li>
+                                    <li><router-link to="add-patient">Add Patient</router-link></li>
                                 </ul>
                             </li>
                             <li class="submenu">
@@ -187,9 +186,8 @@
                                     <span class="menu-arrow"></span>
                                 </a>
                                 <ul>
-                                    <li><a href="appointments.html">Appointments</a></li>
-                                    <li><a href="new-appointment.html">New Appointment</a></li>
-                                    <li><a href="appointment-calendar.html">Calendar</a></li>
+                                    <li><router-link to="/appointments">Appointments</router-link></li>
+                                    <li><router-link to="/add-appointment">New Appointment</router-link></li>
                                 </ul>
                             </li>
                             
@@ -229,9 +227,9 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="hrm-departments.html">
+                                <router-link to="/departments">
                                     <i class="ti ti-building-bank"></i><span>Departments</span>
-                                </a>
+                                </router-link>
                             </li>
                             <!-- <li>
                                 <a href="designation.html">

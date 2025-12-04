@@ -649,7 +649,7 @@
                         </tbody> -->
                         <tbody>
                             <tr v-if="loading">
-                                <td colspan="5" class="text-center py-4">
+                                <td colspan="4" class="text-center py-4">
                                     Loading...
                                 </td>
                             </tr>
@@ -879,13 +879,15 @@ export default {
                 });
 
                 // Map DepartmentName
-                this.doctors = this.doctors.map(doc => ({
-                    ...doc,
-                    departmentName:
-                        doc.departmentId && deptMap[doc.departmentId]
-                            ? deptMap[doc.departmentId]
-                            : "No Department"
-                }));
+                this.doctors = this.doctors
+                    .filter(d => d.status === "Active")  
+                    .map(doc => ({
+                        ...doc,
+                        departmentName:
+                            doc.departmentId && deptMap[doc.departmentId]
+                                ? deptMap[doc.departmentId]
+                                : "No Department"
+                    }));
 
             } catch (error) {
                 console.error("Error load data:", error);
