@@ -126,6 +126,8 @@ import vnAddress from "../data/vietnam-address-2024.json";
 import { getAllPatients } from "../services/patientService";
 import { editPatient } from "../services/patientService";
 import { useToast } from "vue-toastification";
+import { getUserById } from "../services/userService";
+
 
 export default {
     name: "EditPatient",
@@ -171,45 +173,65 @@ export default {
 
         // Load patient from getAllPatients
         async loadPatient(id) {
-            const res = await getAllPatients();
-            const list = Array.isArray(res.data) ? res.data : res;
+            try {
+                const res = await getUserById(id);
+                const p = res.data;
 
-            const p = list.find(x => x.userId == id);
-
-            if (!p) {
-                alert("Patient not found");
-                this.$router.push("/patients");
-                return;
-            }
-
-            // Fill form
-            this.form = {
-                userId: p.userId,
-                fullName: p.fullName,
-                gender: p.gender,
-                phone: p.phone,
-                email: p.email,
-                address: p.address,
-                roleId: 5,
-                departmentId: null
-            };
-
-            this.dobModel = p.dob ? p.dob.split("T")[0] : null;
-
-            // Parse address
-            if (p.address) {
-                const [wardName, provinceName] = p.address.split(",").map(x => x.trim());
-
-                const province = this.provinces.find(pr => pr.tentinhmoi === provinceName);
-                if (province) {
-                    this.selectedProvince = province.matinhBNV;
-                    this.wards = province.phuongxa;
-
-                    const ward = this.wards.find(w => w.tenphuongxa === wardName);
-                    if (ward) this.selectedWard = ward.maphuongxa;
+                if (!p) {
+                    alert("Patient not found");
+                    this.$router.push("/patients");
+                    return;
                 }
+
+                this.form = {
+                    userId: p.userId,
+                    fullName: p.fullName,
+                    gender: p.gender,
+                    phone: p.phone,
+                    email: p.email,
+                    address: p.address,
+                    roleId: 5,
+                    departmentId: null
+                };
+
+                // ================================
+                // FIX DOB — CHUYỂN " " thành "T"
+                // ================================
+                if (p.dob) {
+    // Cắt phần .0000000 nếu có
+    const clean = p.dob.split(".")[0];
+
+    // Đổi “yyyy-MM-dd HH:mm:ss” → “yyyy-MM-ddTHH:mm:ss”
+    const iso = clean.replace(" ", "T");
+
+    this.dobModel = new Date(iso);
+} else {
+    this.dobModel = null;
+}
+
+
+                // ================================
+                // ADDRESS PARSING
+                // ================================
+                if (p.address) {
+                    const [wardName, provinceName] = p.address.split(",").map(x => x.trim());
+
+                    const province = this.provinces.find(pr => pr.tentinhmoi === provinceName);
+                    if (province) {
+                        this.selectedProvince = province.matinhBNV;
+                        this.wards = province.phuongxa;
+
+                        const ward = this.wards.find(w => w.tenphuongxa === wardName);
+                        if (ward) this.selectedWard = ward.maphuongxa;
+                    }
+                }
+
+            } catch (error) {
+                console.error("Failed to load patient:", error);
+                this.$router.push("/patients");
             }
-        },
+        }
+        ,
 
         // Address builder
         buildAddress() {
@@ -230,7 +252,8 @@ export default {
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
                 d.getDate()
             ).padStart(2, "0")}`;
-        },
+        }
+        ,
 
         async handleSubmit() {
             const toast = useToast();

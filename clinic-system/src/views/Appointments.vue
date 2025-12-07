@@ -8,39 +8,65 @@
 
         <!-- HEADER -->
         <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
-          <h4 class="fw-semibold mb-0">Appointments</h4>
+          <h4 class="fw-semibold mb-0">
+            Appointments
+            <span class="badge bg-primary-subtle text-primary ms-2 px-2 py-1 fs-13">
+              Total: {{ appointments.length }}
+            </span>
+          </h4>
+
+
           <router-link to="/add-appointment" class="btn btn-primary">
             <i class="ti ti-plus me-1"></i> New Appointment
           </router-link>
         </div>
         <!-- SEARCH + FILTERS -->
-        <div class="d-flex gap-2 mb-3">
+        <div class="filters d-flex gap-3 mb-3 align-items-end flex-wrap">
 
           <!-- SEARCH -->
-          <input v-model="searchText" type="text" class="form-control w-auto" placeholder="Search patient / doctor..."
-            style="max-width: 240px;" />
+          <div class="filter-group">
+            <label class="form-label small text-muted mb-1">Search</label>
+            <input v-model="searchText" type="text" class="form-control" placeholder="Patient / Doctor..."
+              style="width: 200px;" />
+          </div>
 
-          <!-- FILTER DEPARTMENT -->
-          <select v-model="selectedDepartment" class="form-select" style="max-width: 200px;">
-            <option value="">All Departments</option>
-            <option v-for="d in departments" :key="d.departmentId" :value="d.name">
-              {{ d.name }}
-            </option>
-          </select>
+          <!-- DEPARTMENT -->
+          <div class="filter-group">
+            <label class="form-label small text-muted mb-1">Department</label>
+            <select v-model="selectedDepartment" class="form-select" style="width: 180px;">
+              <option value="">All Departments</option>
+              <option v-for="d in departments" :key="d.departmentId" :value="d.name">
+                {{ d.name }}
+              </option>
+            </select>
+          </div>
 
-          <!-- FILTER STATUS (optional) -->
-          <select v-model="selectedStatus" class="form-select" style="max-width: 150px;">
-            <option value="">All Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="NoShow">NoShow</option>
-          </select>
-          <input type="date" v-model="startDate" lang="en" :class="{ 'is-invalid': showDateError }" class="form-control w-auto" />
+          <!-- STATUS -->
+          <div class="filter-group">
+            <label class="form-label small text-muted mb-1">Status</label>
+            <select v-model="selectedStatus" class="form-select" style="width: 150px;">
+              <option value="">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="NoShow">NoShow</option>
+            </select>
+          </div>
 
-          <input type="date" v-model="endDate" lang="en" :class="{ 'is-invalid': showDateError }" class="form-control w-auto" />
+          <!-- START DATE -->
+          <div class="filter-group">
+            <label class="form-label small text-muted mb-1">Start Date</label>
+            <input type="date" v-model="startDate" class="form-control" :class="{ 'is-invalid': showDateError }"
+              style="width:150px;" />
+          </div>
 
+          <!-- END DATE -->
+          <div class="filter-group">
+            <label class="form-label small text-muted mb-1">End Date</label>
+            <input type="date" v-model="endDate" class="form-control" :class="{ 'is-invalid': showDateError }"
+              style="width:150px;" />
+          </div>
 
         </div>
 
@@ -115,12 +141,12 @@
                       </a>
                     </li>
 
-                    <li>
+                    <!-- <li>
                       <a class="dropdown-item text-danger" @click="openDelete(item)" data-bs-toggle="modal"
                         data-bs-target="#delete_modal">
                         Delete
                       </a>
-                    </li>
+                    </li> -->
                   </ul>
                 </td>
 
@@ -167,7 +193,6 @@
 
     </div>
   </div>
-  <!-- VIEW APPOINTMENT DETAILS -->
   <!-- VIEW APPOINTMENT DETAILS -->
   <div class="offcanvas offcanvas-offset offcanvas-end" tabindex="-1" id="view_details">
     <div class="offcanvas-header d-block pb-0 px-0">
@@ -289,9 +314,9 @@
     </div>
   </div>
   <!-- EDIT APPOINTMENT MODAL -->
-  <div class="modal fade" id="edit_modal" v-if="editModel">
+  <div class="modal fade" id="edit_modal" v-show="editModel">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
+      <div class="modal-content" v-if="editModel">
 
         <div class="modal-header">
           <h5 class="modal-title fw-bold">
@@ -575,46 +600,31 @@ export default {
         const res = await getAllAppointments();
         const appts = res.data;
 
-        // load departments trước
-        if (this.departments.length === 0) {
-          const depRes = await getDepartments();
-          this.departments = depRes;
-        }
+        // Giờ backend đã trả về:
+        // departmentId
+        // departmentName
+        // → không cần xử lý thêm
 
-        // map thêm departmentName vào mỗi appointment
-        const finalList = [];
+        this.appointments = appts.map(a => ({
+          appointmentId: a.appointmentId,
+          patientId: a.patientId,
+          doctorId: a.doctorId,
+          date: a.date,
+          status: a.status,
+          createdAt: a.createdAt,
 
-        for (const a of appts) {
-          try {
-            // gọi API get user theo doctorId
-            const userRes = await getUserById(a.doctorId);
-            const doctor = userRes.data;
+          departmentId: a.departmentId,
+          departmentName: a.departmentName,
 
-            const depId = doctor.departmentId;
-
-            const dep = this.departments.find(d => d.departmentId === depId);
-
-            finalList.push({
-              ...a,
-              departmentId: depId,
-              departmentName: dep ? dep.name : "N/A"
-            });
-          } catch (err) {
-            console.error("Cannot load doctor:", err);
-            finalList.push({
-              ...a,
-              departmentId: null,
-              departmentName: "N/A"
-            });
-          }
-        }
-
-        this.appointments = finalList;
+          doctorName: a.doctorName,     // ⭐ DÙNG DTO FIELD
+          patientName: a.patientName    // ⭐ DÙNG DTO FIELD
+        }));
 
       } catch (err) {
         console.error("Error loading appointments:", err);
       }
     }
+
     ,
     openView(item) {
       this.selectedAppointment = item;
@@ -659,5 +669,52 @@ export default {
 .is-invalid {
   border-color: #dc3545 !important;
   background-color: #ffecec !important;
+}
+
+/* Nhóm filter chung */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Label đẹp hơn, nhẹ nhàng hơn */
+.filter-group .form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d !important;
+}
+
+/* Error highlight */
+.is-invalid {
+  border-color: #dc3545 !important;
+  background-color: #ffecec !important;
+}
+
+/* Unified Filter Input Styling */
+.filter-group .form-control,
+.filter-group .form-select {
+  height: 40px !important;
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid #dcdfe4 !important;
+  background-color: #fff !important;
+
+  /* Add subtle shadow to match Preclinic Input */
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06) !important;
+}
+
+/* Remove default weird styling on date input icon */
+.filter-group input[type="date"]::-webkit-inner-spin-button,
+.filter-group input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  /* same visibility as input text shadow */
+}
+
+.filter-group .form-control,
+.filter-group .form-select {
+  height: 40px !important;
+  padding: 6px 12px !important;
+  font-size: 14px;
 }
 </style>

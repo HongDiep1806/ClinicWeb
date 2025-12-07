@@ -15,6 +15,10 @@ import EditPatient from "../views/EditPatient.vue";
 import Appointments from "../views/Appointments.vue";
 import AddAppointments from "../views/AddAppointments.vue";
 import Departments from "../views/Departments.vue";
+import Staff from "../views/Staff.vue";
+import AddStaff from "../views/AddStaff.vue";
+import EditStaff from "../views/EditStaff.vue";
+import Profile from "../views/Profile.vue";
 
 // ================== CẤU HÌNH ROUTES ==================
 const routes = [
@@ -105,6 +109,30 @@ const routes = [
   path: "/departments",
   name: "departments",
   component: Departments,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/staff",
+  name: "staff",
+  component: Staff,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/add-staff",
+  name: "add-staff",
+  component: AddStaff,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/edit-staff/:id",
+  name: "edit-staff",
+  component: EditStaff,
+  meta: { requiresAuth: true },
+},
+{
+  path: "/profile",
+  name: "profile",
+  component: Profile,
   meta: { requiresAuth: true },
 },
 

@@ -9,8 +9,12 @@
         <!-- HEADER -->
         <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
           <div>
-            <h4 class="fw-bold mb-0">Doctors</h4>
-            <p class="text-muted mb-0 fs-13">Manage all doctors in your clinic</p>
+ <h4 class="fw-bold mb-0">
+      Doctors
+      <span class="badge bg-primary-subtle text-primary ms-2 px-2 py-1 fs-13">
+        Total: {{ doctors.length }}
+      </span>
+    </h4>            
           </div>
           <router-link to="/add-doctor" class="btn btn-primary fs-13">
             <i class="ti ti-plus me-1"></i> Add Doctor

@@ -416,16 +416,23 @@ export default {
         exportChartCSV(type) {
             let header = "";
             let rows = "";
+            if (type === "appointment") {
+                const data = this.getAppointmentData();
+                // data.labels = ["Mon","Tue",...]
+                // data.values = [5,2,3,7...]
 
-            if (type === "status") {
+                header = "Labels,Appointments\n";
+
+                rows = data.labels
+                    .map((label, i) => `${label},${data.values[i]}`)
+                    .join("\n");
+            }
+            else if (type === "status") {
                 header = "Status,Number of Appointments,Percentage\n";
 
-                // Đếm số lượng từng status
                 const count = {
-                    Pending: 0,
-                    Confirmed: 0,
-                    Completed: 0,
-                    Cancelled: 0,
+                    Pending: 0, Confirmed: 0,
+                    Completed: 0, Cancelled: 0,
                     NoShow: 0
                 };
 
@@ -433,22 +440,20 @@ export default {
                     count[a.status] = (count[a.status] || 0) + 1;
                 });
 
-                // Tổng tất cả
                 const total = Object.values(count).reduce((a, b) => a + b, 0);
 
                 rows = Object.entries(count)
                     .map(([status, totalStatus]) => {
-                        const percent = total === 0
-                            ? "0%"
-                            : ((totalStatus / total) * 100).toFixed(1) + "%";
-                        return `${status},${totalStatus},${percent}`;
+                        const pct = total === 0 ? 0 : ((totalStatus / total) * 100).toFixed(1);
+                        return `${status},${totalStatus},${pct}%`;
                     })
                     .join("\n");
             }
-            if (type === "workload") {
-                header = "Doctor,Number of Appointments\n";
+            else if (type === "workload") {
+                header = "Doctor,Appointments\n";
 
                 const count = {};
+
                 this.appointments.forEach(a => {
                     count[a.doctorId] = (count[a.doctorId] || 0) + 1;
                 });
@@ -456,25 +461,22 @@ export default {
                 rows = Object.entries(count)
                     .map(([id, total]) => {
                         const d = this.doctors.find(x => x.userId == id);
-                        return `${d.fullName},${total}`;
+                        return `${d?.fullName || "Unknown"},${total}`;
                     })
                     .join("\n");
             }
 
-
-            // Xuất CSV
             const blob = new Blob([header + rows], { type: "text/csv" });
             const link = document.createElement("a");
+
             link.href = URL.createObjectURL(blob);
             link.download = `${type}-chart.csv`;
             link.click();
         }
 
+
         ,
 
-        /* ------------------------------------------
-         * STATUS BADGE (Pastel)
-         * ------------------------------------------ */
         statusBadge(status) {
             switch (status) {
                 case "Pending": return "badge status-pending";
@@ -489,10 +491,6 @@ export default {
         formatDate(date) {
             return new Date(date).toLocaleDateString("en-GB");
         },
-
-        /* ------------------------------------------
-         * MINI SPARKLINE CHART (SUMMARY CARDS)
-         * ------------------------------------------ */
         renderMiniCharts() {
             this.summaryCards.forEach(card => {
                 const el = document.querySelector(`#mini-chart-${card.id}`);
@@ -535,10 +533,6 @@ export default {
             link.click();
         }
         ,
-
-        /* ------------------------------------------
-         * APPOINTMENT TREND (Line + Column)
-         * ------------------------------------------ */
         renderAppointmentChart() {
             if (this._chartAppointment) this._chartAppointment.destroy();
             if (!this.appointments.length) return;
@@ -581,18 +575,37 @@ export default {
             const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             const result = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
 
+            const today = new Date();
+
+            // Lấy thứ hiện tại (0 = Sun → 6 = Sat)
+            const currentDay = today.getDay();
+
+            // ISO Week: Monday = 1, Sunday = 7
+            const offsetToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+            const monday = new Date(today);
+            monday.setDate(today.getDate() + offsetToMonday);
+
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            // Map cho getDay()
+            const map = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
             this.appointments.forEach(a => {
                 const d = new Date(a.date);
-                const map = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                const name = map[d.getDay()];
-                if (result[name] !== undefined) result[name]++;
+
+                if (d >= monday && d <= sunday) {
+                    const name = map[d.getDay()];
+                    if (result[name] !== undefined) result[name]++;
+                }
             });
 
             return {
                 labels: days,
-                values: days.map(d => result[d]),
+                values: days.map(d => result[d])
             };
-        },
+        }
+        ,
 
         /* -------- MONTHLY -------- */
         getMonthlyData() {
@@ -600,21 +613,31 @@ export default {
             const month = now.getMonth();
             const year = now.getFullYear();
 
-            const map = {};
+            // tổng số ngày trong tháng
+            const totalDays = new Date(year, month + 1, 0).getDate();
+
+            // 4 tuần
+            const weeks = [0, 0, 0, 0];
 
             this.appointments.forEach(a => {
                 const d = new Date(a.date);
+
                 if (d.getMonth() === month && d.getFullYear() === year) {
                     const day = d.getDate();
-                    map[day] = (map[day] || 0) + 1;
+
+                    if (day <= 7) weeks[0]++;
+                    else if (day <= 14) weeks[1]++;
+                    else if (day <= 21) weeks[2]++;
+                    else weeks[3]++;
                 }
             });
 
             return {
-                labels: Object.keys(map),
-                values: Object.values(map),
+                labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+                values: weeks
             };
-        },
+        }
+        ,
 
         /* -------- YEARLY -------- */
         getYearlyData() {
@@ -923,31 +946,31 @@ export default {
 .status-pending {
     background: #fff5d6 !important;
     color: #d2a200 !important;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .status-confirmed {
     background: #e1f7e6 !important;
     color: #2e8b57 !important;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .status-completed {
     background: #d9efff !important;
     color: #0d6efd !important;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .status-cancelled {
     background: #ffe1e5 !important;
     color: #d6336c !important;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .status-noshow {
     background: #ececec !important;
     color: #6c757d !important;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 /* ------------------------------

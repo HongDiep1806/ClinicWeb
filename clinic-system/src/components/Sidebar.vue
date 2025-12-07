@@ -222,9 +222,9 @@
                     <li>
                         <ul>
                             <li>
-                                <a href="staffs.html">
+                                <router-link to="/staff">
                                     <i class="ti ti-users-group"></i><span>Staffs</span>
-                                </a>
+                                </router-link>
                             </li>
                             <li>
                                 <router-link to="/departments">

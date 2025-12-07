@@ -235,12 +235,13 @@ export default {
     },
     async mounted() {
         try {
-            this.departments = await getDepartments();
-            console.log("DEPARTMENTS LOADED:", this.departments);
+            const res = await getDepartments();
+            this.departments = res.filter(d => d.status === "Active"); // ✔ chỉ hiện active
         } catch (err) {
             console.error("Failed to load departments", err);
         }
-    },
+    }
+    ,
 
 
 

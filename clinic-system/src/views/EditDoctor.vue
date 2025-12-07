@@ -59,8 +59,8 @@
                                     <!-- Gender -->
                                     <div class="mb-3">
                                         <label class="form-label">Gender</label>
-                                        <select v-model="form.gender" class="form-control">
-                                            <option value="">Select</option>
+                                        <select v-model="form.gender"  class="form-control">
+                                            <option value="" disabled>Select</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
                                         </select>
@@ -76,7 +76,7 @@
                                             <div class="col-md-6 mb-2">
                                                 <select v-model="selectedProvince" class="form-control"
                                                     @change="onProvinceChange">
-                                                    <option value="">Select Province/City</option>
+                                                    <option value="" disabled>Select Province/City</option>
                                                     <option v-for="p in provinces" :key="p.matinhBNV"
                                                         :value="p.matinhBNV">
                                                         {{ p.tentinhmoi }}
@@ -87,7 +87,7 @@
                                             <!-- Ward -->
                                             <div class="col-md-6 mb-2">
                                                 <select v-model="selectedWard" class="form-control">
-                                                    <option value="">Select Ward</option>
+                                                    <option value="" disabled>Select Ward</option>
                                                     <option v-for="w in wards" :key="w.maphuongxa"
                                                         :value="w.maphuongxa">
                                                         {{ w.tenphuongxa }}
@@ -102,12 +102,14 @@
                                     <div class="mb-3">
                                         <label class="form-label">Department *</label>
                                         <select v-model="form.departmentId" class="form-control" required>
-                                            <option value="">Select</option>
+                                            <option value="" disabled>Select</option>
 
                                             <option v-for="dept in departments" :key="dept.departmentId"
-                                                :value="dept.departmentId">
+                                                :value="dept.departmentId" :disabled="dept.status === 'Inactive'">
                                                 {{ dept.name }}
+                                                <span v-if="dept.status === 'Inactive'">(Inactive)</span>
                                             </option>
+
                                         </select>
                                     </div>
 
@@ -144,6 +146,7 @@ import { getAllDoctors } from "../services/doctorService";
 import { editDoctor } from "../services/doctorService";
 import vnAddress from "../data/vietnam-address-2024.json";
 import { useToast } from "vue-toastification";
+import { getUserById } from '../services/userService';
 
 
 
@@ -208,51 +211,82 @@ export default {
 
 
         async loadDepartments() {
-            this.departments = await getDepartments();
-        },
+            const res = await getDepartments();
 
-        async loadDoctor(id) {
-            const res = await getAllDoctors();
+            // load doctor để biết khoa hiện tại
+            const doctorId = this.$route.params.id;
+            const doctorsRes = await getAllDoctors();
+            const list = doctorsRes.data ?? doctorsRes;
 
-            // Backend trả về dạng { data: [...] } hay chỉ là array?
-            const list = res.data ?? res;
+            const doctor = list.find(d => d.userId == doctorId);
+            const doctorDeptId = doctor?.departmentId;
 
-            const doctor = list.find(d => d.userId == id);
+            // Lấy tất cả khoa active + khoa hiện tại (dù inactive)
+            this.departments = res.filter(d =>
+                d.status === "Active" || d.departmentId === doctorDeptId
+            );
+        }
+        ,
 
-            if (!doctor) {
-                alert("Doctor not found");
-                this.$router.push("/doctors");
-                return;
-            }
+       async loadDoctor(id) {
+    try {
+        const res = await getUserById(id);
+        const doctor = res.data;
 
-            this.form = {
-                userId: doctor.userId,
-                fullName: doctor.fullName,
-                gender: doctor.gender,
-                phone: doctor.phone,
-                address: doctor.address,
-                email: doctor.email,
-                departmentId: doctor.departmentId
-            };
+        if (!doctor) {
+            alert("Doctor not found");
+            this.$router.push("/doctors");
+            return;
+        }
 
-            this.dobModel = doctor.dob ? doctor.dob.split("T")[0] : null;
-            if (doctor.address) {
-                const parts = doctor.address.split(",").map(x => x.trim());
-                const wardName = parts[0];
-                const provinceName = parts[1];
+        // Gán form
+        this.form = {
+            userId: doctor.userId,
+            fullName: doctor.fullName,
+            gender: doctor.gender,
+            phone: doctor.phone,
+            address: doctor.address,
+            email: doctor.email,
+            departmentId: doctor.departmentId
+        };
 
-                const province = this.provinces.find(p => p.tentinhmoi === provinceName);
-                if (province) {
-                    this.selectedProvince = province.matinhBNV;
-                    this.wards = province.phuongxa;
+        // ===========================
+        // FIX DOB — PARSE CHUẨN
+        // ===========================
+        if (doctor.dob) {
+            const cleanDob = doctor.dob.replace(" ", "T");
+            this.dobModel = new Date(cleanDob);
+        } else {
+            this.dobModel = null;
+        }
 
-                    const ward = this.wards.find(w => w.tenphuongxa === wardName);
-                    if (ward) {
-                        this.selectedWard = ward.maphuongxa;
-                    }
+        // ===========================
+        // ADDRESS
+        // ===========================
+        if (doctor.address) {
+            const parts = doctor.address.split(",").map(x => x.trim());
+            const wardName = parts[0];
+            const provinceName = parts[1];
+
+            const province = this.provinces.find(p => p.tentinhmoi === provinceName);
+            if (province) {
+                this.selectedProvince = province.matinhBNV;
+                this.wards = province.phuongxa;
+
+                const ward = this.wards.find(w => w.tenphuongxa === wardName);
+                if (ward) {
+                    this.selectedWard = ward.maphuongxa;
                 }
             }
-        },
+        }
+
+    } catch (err) {
+        console.error("Failed to load doctor:", err);
+        this.$router.push("/doctors");
+    }
+}
+
+,
 
 
         formatDate(date) {
@@ -264,40 +298,48 @@ export default {
         },
 
         async handleSubmit() {
-            this.errors.phone = "";
-            const toast = useToast();
+    const toast = useToast();
+    this.errors.phone = "";
 
-            if (!this.form.phone || this.form.phone.length < 9) {
-                this.errors.phone = "Invalid phone number.";
-                return;
-            }
+    // -------- REQUIRED FIELDS --------
+    if (!this.form.fullName || !this.form.email || !this.form.gender ||
+        !this.form.phone || !this.selectedProvince || !this.selectedWard ||
+        !this.form.departmentId) 
+    {
+        toast.error("Please fill in all required fields.");
+        return;
+    }
 
-            const payload = {
-                userId: this.form.userId,
-                fullName: this.form.fullName,
-                dob: this.dobModel ? this.formatDate(this.dobModel) : null,
-                gender: this.form.gender,
-                phone: this.form.phone,
-                address: this.buildAddress(),
-                email: this.form.email,
-                departmentId: Number(this.form.departmentId)
-            };
+    // -------- PHONE --------
+    if (this.form.phone.length < 10) {
+        this.errors.phone = "Invalid phone number.";
+        return;
+    }
 
-            try {
-                await editDoctor(this.userId, payload);
+    const payload = {
+        userId: this.form.userId,
+        fullName: this.form.fullName,
+        dob: this.dobModel ? this.formatDate(this.dobModel) : null,
+        gender: this.form.gender,
+        phone: this.form.phone,
+        address: this.buildAddress(),
+        email: this.form.email,
+        departmentId: Number(this.form.departmentId)
+    };
 
-                toast.success("Doctor edited successfully!");
-                this.$router.push("/doctors");
-            }
-            catch (err) {
-                if (err.response && err.response.status === 409) {
-                    toast.error("Email already exists. Please choose another.");
-                    return;
-                }
-
-                toast.error("Failed to update doctor.");
-            }
+    try {
+        await editDoctor(this.userId, payload);
+        toast.success("Doctor updated successfully!");
+        this.$router.push("/doctors");
+    } catch (err) {
+        if (err.response && err.response.status === 409) {
+            toast.error("Email already exists. Please choose another.");
+            return;
         }
+        toast.error("Failed to update doctor.");
+    }
+}
+
 
 
     },

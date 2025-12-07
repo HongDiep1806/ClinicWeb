@@ -36,3 +36,8 @@ export async function deleteDepartment(id) {
   const response = await axiosInstance.delete(`/Department/delete/${id}`);
   return response.data;
 }
+export async function toggleDepartmentStatus(id) {
+  const response = await axiosInstance.put(`/Department/toggle-status/${id}`);
+  return response.data;
+}
+

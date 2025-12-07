@@ -150,27 +150,31 @@ export default {
     // ============================================
     // MOUNTED
     // ============================================
-    onMounted(async () => {
-patients.value = (await getAllPatients()).data.filter(p => p.status === "Active");
-      departments.value = await getDepartments();
+   onMounted(async () => {
+  patients.value = (await getAllPatients()).data.filter(p => p.status === "Active");
 
-      const today = new Date();
-      const iso = moment(today).format("YYYY-MM-DD");
-      const display = moment(today).format("DD/MM/YYYY");
+  // 🔥 CHỈ LẤY DEPARTMENT ACTIVE
+  const all = await getDepartments();
+  departments.value = all.filter(d => d.status === "Active");
 
-      $("#datePicker").val(display);
-      form.value.date = iso;
+  const today = new Date();
+  const iso = moment(today).format("YYYY-MM-DD");
+  const display = moment(today).format("DD/MM/YYYY");
 
-      $("#datePicker")
-        .datetimepicker({
-          format: "DD/MM/YYYY",
-          minDate: today
-        })
-        .on("dp.change", async (e) => {
-          form.value.date = e.date.format("YYYY-MM-DD");
-          await loadFilteredDoctors();
-        });
+  $("#datePicker").val(display);
+  form.value.date = iso;
+
+  $("#datePicker")
+    .datetimepicker({
+      format: "DD/MM/YYYY",
+      minDate: today
+    })
+    .on("dp.change", async (e) => {
+      form.value.date = e.date.format("YYYY-MM-DD");
+      await loadFilteredDoctors();
     });
+});
+
 
     const submit = async () => {
       if (!form.value.patientId) return toast.error("Please select patient");
