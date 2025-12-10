@@ -24,7 +24,7 @@ export const useAuthStore = defineStore("auth", {
     async logout() {
       try {
         if (this.refreshToken) {
-          await axios.post("https://localhost:7205/api/Auth/logout", {
+          await axios.post("https://clinic-management-system-production-2598.up.railway.app/Auth/logout", {
             refreshToken: this.refreshToken,
           });
         }

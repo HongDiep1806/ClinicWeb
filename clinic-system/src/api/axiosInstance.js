@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Instance chính – có interceptor
 const axiosInstance = axios.create({
-  baseURL: "https://localhost:7205/api",
+  baseURL: "https://clinic-management-system-production-2598.up.railway.app",
   headers: { "Content-Type": "application/json" },
 });
 
