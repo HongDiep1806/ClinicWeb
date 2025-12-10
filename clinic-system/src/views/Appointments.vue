@@ -595,35 +595,32 @@ export default {
       // TODO: call delete API
     },
 
-    async loadAppointments() {
-      try {
-        const res = await getAllAppointments();
-        const appts = res.data;
+   async loadAppointments() {
+  try {
+    const res = await getAllAppointments();
+    const appts = res.data;
 
-        // Giờ backend đã trả về:
-        // departmentId
-        // departmentName
-        // → không cần xử lý thêm
+    this.appointments = appts.map(a => ({
+      appointmentId: a.appointmentId,
+      patientId: a.patientId,
+      doctorId: a.doctorId,
+      date: a.date,
+      status: a.status,
+      createdAt: a.createdAt,
+      departmentId: a.departmentId,
+      departmentName: a.departmentName,
+      doctorName: a.doctorName,
+      patientName: a.patientName
+    }));
 
-        this.appointments = appts.map(a => ({
-          appointmentId: a.appointmentId,
-          patientId: a.patientId,
-          doctorId: a.doctorId,
-          date: a.date,
-          status: a.status,
-          createdAt: a.createdAt,
+    // ⭐ SORT newest → oldest
+    this.appointments.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-          departmentId: a.departmentId,
-          departmentName: a.departmentName,
+  } catch (err) {
+    console.error("Error loading appointments:", err);
+  }
+}
 
-          doctorName: a.doctorName,     // ⭐ DÙNG DTO FIELD
-          patientName: a.patientName    // ⭐ DÙNG DTO FIELD
-        }));
-
-      } catch (err) {
-        console.error("Error loading appointments:", err);
-      }
-    }
 
     ,
     openView(item) {
