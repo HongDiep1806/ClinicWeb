@@ -101,7 +101,7 @@ export default {
       this.errorMessage = "";
 
       try {
-        const response = await axios.post("https://localhost:7205/api/Auth/login", {
+        const response = await axios.post("https://clinic-management-system-production-2598.up.railway.app/Auth/login", {
           email: this.email,
           password: this.password,
         });
