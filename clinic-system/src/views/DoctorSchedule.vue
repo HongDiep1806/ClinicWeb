@@ -39,7 +39,7 @@
                 <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 mb-3 pb-3 border-bottom">
                     <div class="flex-grow-1">
                         <h4 class="fw-bold mb-0"> Doctor Schedule<span
-                                class="badge badge-soft-primary fs-13 fw-medium ms-2">Total Doctors : 565</span></h4>
+                                class="badge badge-soft-primary fs-13 fw-medium ms-2">Total Doctors : {{ doctors.length }}</span></h4>
                     </div>
                     <div class="text-end d-flex">
                         <!-- dropdown-->
