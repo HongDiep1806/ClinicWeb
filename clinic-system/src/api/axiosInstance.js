@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
 
 // Instance RAW – không interceptor → dùng để refresh token
 const axiosRaw = axios.create({
-  baseURL: "https://localhost:7205/api",
+  baseURL: "https://clinic-management-system-production-2598.up.railway.app",
 });
 
 // =========================
