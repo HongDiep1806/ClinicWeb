@@ -2,13 +2,13 @@ import axios from "axios";
 
 // Instance chính – có interceptor
 const axiosInstance = axios.create({
-  baseURL: "https://clinic-management-system-production-2598.up.railway.app",
+  baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
   headers: { "Content-Type": "application/json" },
 });
 
 // Instance RAW – không interceptor → dùng để refresh token
 const axiosRaw = axios.create({
-  baseURL: "https://clinic-management-system-production-2598.up.railway.app",
+  baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
 });
 
 // =========================
