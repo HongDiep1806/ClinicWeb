@@ -22,8 +22,11 @@ const app = createApp(App);
 
 // Create PINIA ONCE
 const pinia = createPinia();
-pinia.use(piniaPluginPersistedstate);
-
+pinia.use(
+  piniaPluginPersistedstate({
+    auto: false   
+  })
+);
 // Use plugins
 app.use(pinia);        // ⭐ Phải dùng pinia này — không được dùng createPinia()
 app.use(router);

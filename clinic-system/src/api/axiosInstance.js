@@ -207,6 +207,7 @@ axiosInstance.interceptors.response.use(
       auth.expiresAt = res.data.expiresAt;
 
       onRefreshed(newAccess);
+      console.log("Token refreshed successfully!");
 
       // Retry request
       original.headers.Authorization = `Bearer ${newAccess}`;
