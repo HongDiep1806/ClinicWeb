@@ -35,7 +35,7 @@ applyTheme();
 // Restore session BEFORE mount
 const auth = useAuthStore();
 // ❗ Không cần restoreSession nếu bạn dùng persist, nhưng nếu bạn có logic custom thì giữ lại
-auth.restoreSession?.();
+// auth.restoreSession?.();
 
 // Mount app
 app.mount("#app");

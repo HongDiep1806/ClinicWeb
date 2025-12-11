@@ -33,18 +33,35 @@
                     </div>
 
                     <!-- Password -->
-                    <div class="mb-3">
-                      <label class="form-label">Password</label>
-                      <div class="position-relative">
-                        <div class="pass-group input-group border rounded">
-                          <span class="input-group-text bg-white border-0">
-                            <i class="ti ti-lock text-dark fs-14"></i>
-                          </span>
-                          <input type="password" v-model="password" class="form-control border-0 ps-0"
-                            placeholder="*********" />
-                        </div>
-                      </div>
-                    </div>
+                    <!-- Password -->
+<div class="mb-3">
+  <label class="form-label">Password</label>
+  <div class="position-relative">
+    <div class="pass-group input-group border rounded">
+
+      <span class="input-group-text bg-white border-0">
+        <i class="ti ti-lock text-dark fs-14"></i>
+      </span>
+
+      <input
+        :type="showPassword ? 'text' : 'password'"
+        v-model="password"
+        class="form-control border-0 ps-0"
+        placeholder="*********"
+      />
+
+      <!-- Eye Icon -->
+      <span
+        class="input-group-text bg-white border-0 pe-2 pointer"
+        @click="togglePassword"
+        style="cursor: pointer;"
+      >
+        <i :class="showPassword ? 'ti ti-eye-off' : 'ti ti-eye'" class="fs-16"></i>
+      </span>
+    </div>
+  </div>
+</div>
+
 
                     <!-- Remember + Forgot -->
                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -92,10 +109,14 @@ export default {
       password: "",
       loading: false,
       errorMessage: "",
+      howPassword: false,  
     };
   },
 
   methods: {
+     togglePassword() {
+    this.showPassword = !this.showPassword;  
+  },
     async handleLogin() {
       this.loading = true;
       this.errorMessage = "";
