@@ -125,6 +125,39 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/auth";
 
+// =========================
+// HÀM CONVERT UTC → LOCAL
+// =========================
+function convertUtcToLocal(utcString) {
+  if (!utcString) return null;
+
+  // utcString dạng: "dd-MM-yyyy HH:mm:ss"
+  const [datePart, timePart] = utcString.split(" ");
+  const [day, month, year] = datePart.split("-");
+  const [h, m, s] = timePart.split(":");
+
+  // Tạo Date object theo UTC
+  const utcDate = new Date(Date.UTC(
+    parseInt(year),
+    parseInt(month) - 1,
+    parseInt(day),
+    parseInt(h),
+    parseInt(m),
+    parseInt(s)
+  ));
+
+  // Trả về giờ local (VD: UTC+7 → VN giờ)
+  return utcDate.toLocaleString("vi-VN", {
+    hour12: false,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
 // Instance chính – có interceptor
 const axiosInstance = axios.create({
   baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
@@ -190,18 +223,16 @@ axiosInstance.interceptors.response.use(
     const authStore = useAuthStore();
     const refreshToken = authStore.refreshToken;
 
-    // ❗ Nếu không có refresh token (do reload trang) → logout
     if (!refreshToken) {
       authStore.logout();
       return Promise.reject(error);
     }
 
-    // Nếu đang refresh rồi → đợi
     if (isRefreshing) {
       return new Promise((resolve) => {
         subscribeTokenRefresh((newToken) => {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          resolve(axiosInstance(originalRequest));
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            resolve(axiosInstance(originalRequest));
         });
       });
     }
@@ -221,11 +252,11 @@ axiosInstance.interceptors.response.use(
       // Cập nhật Pinia
       authStore.token = accessToken;
       authStore.refreshToken = newRefreshToken;
-      authStore.expiresAt = expiresAt;
+      authStore.expiresAt = convertUtcToLocal(expiresAt);   // ⭐ convert tại đây
 
-      // Cập nhật localStorage (chỉ access token)
+      // Cập nhật localStorage (chỉ access token + thời gian local)
       localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("expiresAt", expiresAt);
+      localStorage.setItem("expiresAt", convertUtcToLocal(expiresAt));  // ⭐ convert tại đây
 
       console.log("🔄 Refresh thành công — token mới đã được cấp!");
 
@@ -235,6 +266,7 @@ axiosInstance.interceptors.response.use(
       // Retry request cũ
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
       return axiosInstance(originalRequest);
+
     } catch (err) {
       console.error("❌ Refresh token failed:", err);
       authStore.logout();
