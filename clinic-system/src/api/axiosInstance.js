@@ -125,13 +125,22 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/auth";
 
+// ============================
+// GLOBAL CONFIG — BẮT BUỘC
+// ============================
+axios.defaults.withCredentials = true;   // ⭐ Cookie sẽ tự gửi trong mọi request
+
 const axiosInstance = axios.create({
   baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true, // ⭐ Cookie đi cùng axiosInstance
 });
 
 const axiosRaw = axios.create({
   baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
+  withCredentials: true, // ⭐ Cookie đi cùng axiosRaw
 });
 
 // =========================
@@ -142,14 +151,17 @@ axiosInstance.interceptors.request.use(
     const auth = useAuthStore();
     const token = auth.token;
 
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
 // =========================
-// RESPONSE INTERCEPTOR — REFRESH TOKEN
+// RESPONSE INTERCEPTOR — COOKIE VERSION
 // =========================
 let isRefreshing = false;
 let subscribers = [];
@@ -158,7 +170,6 @@ function onRefreshed(token) {
   subscribers.forEach((cb) => cb(token));
   subscribers = [];
 }
-
 function subscribe(cb) {
   subscribers.push(cb);
 }
@@ -167,52 +178,50 @@ axiosInstance.interceptors.response.use(
   (response) => response,
 
   async (error) => {
-    const original = error.config;
     const auth = useAuthStore();
+    const original = error.config;
 
-    if (error.response?.status !== 401) return Promise.reject(error);
-
-    if (original._retry) return Promise.reject(error);
-    original._retry = true;
-
-    // Nếu không có refreshToken → logout
-    if (!auth.refreshToken) {
-      auth.logout();
+    if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
 
-    // Nếu đang refresh → chờ
+    // tránh refresh loop
+    if (original._retry) {
+      auth.logout();
+      return Promise.reject(error);
+    }
+    original._retry = true;
+
+    // ===== trường hợp refresh =====
     if (isRefreshing) {
       return new Promise((resolve) => {
-        subscribe((token) => {
-          original.headers.Authorization = `Bearer ${token}`;
+        subscribe((newToken) => {
+          original.headers.Authorization = `Bearer ${newToken}`;
           resolve(axiosInstance(original));
         });
       });
     }
 
-    // Bắt đầu refresh
     isRefreshing = true;
 
     try {
-      const res = await axiosRaw.post("/Auth/refresh", {
-        refreshToken: auth.refreshToken,
-      });
+      const res = await axiosRaw.post("/Auth/refresh", {}); // ⭐ KHÔNG gửi refreshToken
 
       const newAccess = res.data.accessToken;
-      const newRefresh = res.data.refreshToken;
+      const newExpires = res.data.expiresAt;
 
+      // ⭐ Cập nhật access token vào FE
       auth.token = newAccess;
-      auth.refreshToken = newRefresh;
-      auth.expiresAt = res.data.expiresAt;
+      auth.expiresAt = newExpires;
 
       onRefreshed(newAccess);
-      console.log("Token refreshed successfully!");
 
-      // Retry request
+      // gắn token mới vào request cũ
       original.headers.Authorization = `Bearer ${newAccess}`;
+
       return axiosInstance(original);
     } catch (err) {
+      console.error("🔥 Refresh failed:", err);
       auth.logout();
       return Promise.reject(err);
     } finally {

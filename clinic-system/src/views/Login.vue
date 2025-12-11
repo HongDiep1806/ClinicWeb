@@ -95,8 +95,90 @@
     </div>
   </div>
 </template>
-
 <script>
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../stores/auth";
+
+export default {
+  name: "Login",
+  data() {
+    return {
+      email: "",
+      password: "",
+      loading: false,
+      errorMessage: "",
+      showPassword: false,
+    };
+  },
+
+  methods: {
+    togglePassword() {
+      this.showPassword = !this.showPassword;
+    },
+
+    async handleLogin() {
+      this.loading = true;
+      this.errorMessage = "";
+
+      try {
+        // ⭐ MUST HAVE: cookie tự động lưu refreshToken vào HttpOnly Cookie
+        const response = await axios.post(
+          "https://clinic-management-system-production-2598.up.railway.app/api/Auth/login",
+          {
+            email: this.email,
+            password: this.password,
+          },
+          {
+            withCredentials: true, // ⭐ Gửi cookie + nhận cookie
+          }
+        );
+
+        // ⭐ ONLY ACCESS TOKEN + EXPIRES — KHÔNG CÓ refreshToken NỮA
+        const { accessToken, expiresAt } = response.data;
+
+        const decoded = jwtDecode(accessToken);
+
+        const userId =
+          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+
+        const role =
+          decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+        const name =
+          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+
+        const email =
+          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
+
+        const auth = useAuthStore();
+
+        // ⭐ Login KHÔNG nhận refreshToken nữa
+        auth.login(accessToken, { userId, role, name, email }, expiresAt);
+
+        // ⭐ Redirect by role
+        const normalized = role.toLowerCase();
+        const target = {
+          admin: "admin-dashboard",
+          doctor: "doctor-dashboard",
+          receptionist: "receptionist-dashboard",
+          patient: "patient-dashboard",
+        }[normalized] || "patient-dashboard";
+
+        this.$router.replace({ name: target });
+      } catch (err) {
+        this.errorMessage =
+          err.response?.data?.message || "Invalid email or password.";
+      } finally {
+        this.loading = false;
+      }
+    },
+  },
+};
+</script>
+
+
+<!-- <script>
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useAuthStore } from "../stores/auth";
@@ -163,4 +245,4 @@ export default {
     },
   },
 };
-</script>
+</script> -->

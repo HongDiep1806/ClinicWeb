@@ -151,49 +151,42 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
 
-  // Khôi phục từ localStorage khi load app
-  //auth.restoreSession();
-
+  // ❗ Không còn restore refreshToken → chỉ load từ localStorage những gì persist lưu
   const token = auth.token;
-  const refresh = auth.refreshToken;
   const isExpired = auth.isTokenExpired;
   const role = auth.user?.role?.toLowerCase();
 
-  // ===== CASE 1: Không có token -> bắt buộc login =====
-  if (!token && !refresh) {
+  // CASE 1 — Không có accessToken → redirect login
+  if (!token) {
     if (to.name !== "login") return next({ name: "login" });
     return next();
   }
 
-  // ===== CASE 2: Có token nhưng token HẾT HẠN =====
-  if (token && isExpired) {
-    // Cố refresh
-    const refreshed = await auth.refreshAccessToken();
-
-    // Refresh thất bại → quay login
-    if (!refreshed) return next({ name: "login" });
+  // CASE 2 — Token hết hạn → cố refresh (COOKIE tự gửi)
+  if (isExpired) {
+    const ok = await auth.refreshAccessToken();
+    if (!ok) return next({ name: "login" });
   }
 
-  // ===== CASE 3: Có token HỢP LỆ -> Auto redirect theo vai trò =====
+  // CASE 3 — Đã login → không quay lại trang login
   if (token && to.name === "login") {
     if (role === "admin") return next({ name: "admin-dashboard" });
     if (role === "doctor") return next({ name: "doctor-dashboard" });
     return next({ name: "patient-dashboard" });
   }
 
-  // ===== CASE 4: Route cần login nhưng chưa login =====
+  // CASE 4 — Route yêu cầu login nhưng thiếu token
   if (to.meta.requiresAuth && !auth.token) {
     return next({ name: "login" });
   }
-  // ===== CASE 5: Check quyền truy cập theo role =====
+
+  // CASE 5 — Check role
   if (to.meta.allowRoles && !to.meta.allowRoles.includes(role)) {
-    // Nếu không có quyền → redirect theo đúng dashboard
     if (role === "admin") return next({ name: "admin-dashboard" });
     if (role === "doctor") return next({ name: "doctor-dashboard" });
     return next({ name: "patient-dashboard" });
   }
 
-  // ===== Cho phép đi tiếp =====
   next();
 });
 

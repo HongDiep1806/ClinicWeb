@@ -67,18 +67,27 @@ import { defineStore } from "pinia";
 import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
-  // ⭐ Persist CHỈ lưu 3 trường — KHÔNG LƯU refreshToken
   persist: {
-    key: "auth",                 // tên lưu trong localStorage
-    storage: localStorage,       // ⭐ BẮT BUỘC phải có
-    paths: ["token", "expiresAt", "user"], 
+    key: "auth",
+    storage: localStorage,
+    serializer: {
+      serialize(value) {
+        // Không bao giờ lưu refreshToken
+        const { refreshToken, ...safeData } = value;
+        return JSON.stringify(safeData);
+      },
+      deserialize(value) {
+        return JSON.parse(value);
+      }
+    }
   },
 
   state: () => ({
     token: null,
-    refreshToken: null,   // ⭐ KHÔNG được persist → luôn ở RAM
     expiresAt: null,
     user: {},
+    // ❗ refreshToken sẽ không được dùng nữa (do BE lưu trong cookie)
+    refreshToken: null,
   }),
 
   getters: {
@@ -89,40 +98,50 @@ export const useAuthStore = defineStore("auth", {
   },
 
   actions: {
-    login(accessToken, user, refreshToken, expiresAt) {
+    // ⭐ LOGIN — FE chỉ nhận accessToken + user + expiresAt
+    login(accessToken, user, expiresAt) {
       this.token = accessToken;
-      this.refreshToken = refreshToken;   // ⭐ RAM ONLY
       this.expiresAt = expiresAt;
       this.user = user;
+      // ❗ Không có refreshToken ở đây
     },
 
-    logout() {
+    // ⭐ LOGOUT — FE chỉ gọi API xoá cookie
+    async logout() {
+      try {
+        await axios.post(
+          "https://clinic-management-system-production-2598.up.railway.app/api/Auth/logout",
+          {},
+          { withCredentials: true }    // ❗ cookie gửi lên để BE xoá
+        );
+      } catch (err) {
+        console.warn("Logout API error:", err);
+      }
+
       this.token = null;
-      this.refreshToken = null;
       this.expiresAt = null;
       this.user = {};
 
-      // ⭐ Xoá đúng key persist
       localStorage.removeItem("auth");
 
       window.location.href = "/login";
     },
 
+    // ⭐ REFRESH TOKEN — FE KHÔNG gửi refreshToken nữa
     async refreshAccessToken() {
-      if (!this.refreshToken) return false;
-
       try {
         const res = await axios.post(
           "https://clinic-management-system-production-2598.up.railway.app/api/Auth/refresh",
-          { refreshToken: this.refreshToken }
+          {},
+          { withCredentials: true }   // cookie tự gửi
         );
 
         this.token = res.data.accessToken;
-        this.refreshToken = res.data.refreshToken;  // ⭐ update RAM
         this.expiresAt = res.data.expiresAt;
 
         return true;
-      } catch {
+      } catch (err) {
+        console.error("Refresh token failed:", err);
         this.logout();
         return false;
       }
