@@ -41,9 +41,9 @@
                         <h4 class="fw-bold mb-0"> Doctor Schedule<span
                                 class="badge badge-soft-primary fs-13 fw-medium ms-2">Total Doctors : {{ doctors.length }}</span></h4>
                     </div>
-                    <div class="text-end d-flex">
+                    <!-- <div class="text-end d-flex"> -->
                         <!-- dropdown-->
-                        <div class="dropdown me-1">
+                        <!-- <div class="dropdown me-1">
                             <a href="javascript:void(0);"
                                 class="btn btn-md fs-14 fw-normal border bg-white rounded text-dark d-inline-flex align-items-center"
                                 data-bs-toggle="dropdown">
@@ -57,8 +57,8 @@
                                     <a class="dropdown-item" href="#">Download as Excel</a>
                                 </li>
                             </ul>
-                        </div>
-                    </div>
+                        </div> -->
+                    <!-- </div> -->
                 </div>
                 <!-- End Page Header -->
 
