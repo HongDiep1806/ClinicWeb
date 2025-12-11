@@ -67,66 +67,34 @@ import { defineStore } from "pinia";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    token: localStorage.getItem("accessToken") || null,
-    user: JSON.parse(localStorage.getItem("user")) || {}, 
-
-    // ❗ Refresh token giờ chỉ lưu trong RAM
-    refreshToken: null,  
-
-    expiresAt: localStorage.getItem("expiresAt") || null,
+    token: null,
+    user: {},
+    refreshToken: null,
+    expiresAt: null,
   }),
 
+  // ⭐ PERSIST TOÀN BỘ STATE
+  persist: {
+    key: "auth-store",
+    storage: window.localStorage, // có thể đổi thành sessionStorage tuỳ ý
+  },
+
   actions: {
-    login(accessToken, user, refreshToken, expiresAt) {
-      this.token = accessToken;
-      this.user = user || {}; 
-      this.refreshToken = refreshToken;  // ➜ Chỉ lưu trong RAM
+    login(token, user, refreshToken, expiresAt) {
+      this.token = token;
+      this.user = user;
+      this.refreshToken = refreshToken;
       this.expiresAt = expiresAt;
-
-      // Lưu vào localStorage (chỉ những thứ an toàn)
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("user", JSON.stringify(this.user));
-      if (expiresAt) localStorage.setItem("expiresAt", expiresAt);
-
-      // ❗ Tuyệt đối KHÔNG lưu refresh token vào localStorage
     },
 
-    async logout() {
-      try {
-        if (this.refreshToken) {
-          await axios.post(
-            "https://clinic-management-system-production-2598.up.railway.app/api/Auth/logout",
-            { refreshToken: this.refreshToken }
-          );
-        }
-      } catch (err) {
-        console.warn("⚠️ Logout API error (vẫn tiếp tục logout FE):", err);
-      }
-
-      // Xoá state
+    logout() {
       this.token = null;
       this.refreshToken = null;
-      this.user = null;
+      this.expiresAt = null;
+      this.user = {};
 
-      // Xoá localStorage
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("expiresAt");
-      localStorage.removeItem("user");
-
+      // Không dùng localStorage.clear() nữa
       window.location.href = "/login";
-    },
-
-    restoreSession() {
-      // Chỉ restore những thứ an toàn từ localStorage
-      this.token = localStorage.getItem("accessToken") || null;
-
-      const user = localStorage.getItem("user");
-      this.user = user ? JSON.parse(user) : {};
-
-      this.expiresAt = localStorage.getItem("expiresAt") || null;
-
-      // ❗ Refresh token KHÔNG khôi phục được → user reload trang phải login lại
-      this.refreshToken = null;
     },
   },
 });

@@ -131,12 +131,10 @@ import { useAuthStore } from "../stores/auth";
 function convertUtcToLocal(utcString) {
   if (!utcString) return null;
 
-  // utcString dạng: "dd-MM-yyyy HH:mm:ss"
   const [datePart, timePart] = utcString.split(" ");
   const [day, month, year] = datePart.split("-");
   const [h, m, s] = timePart.split(":");
 
-  // Tạo Date object theo UTC
   const utcDate = new Date(Date.UTC(
     parseInt(year),
     parseInt(month) - 1,
@@ -146,7 +144,6 @@ function convertUtcToLocal(utcString) {
     parseInt(s)
   ));
 
-  // Trả về giờ local (VD: UTC+7 → VN giờ)
   return utcDate.toLocaleString("vi-VN", {
     hour12: false,
     day: "2-digit",
@@ -158,33 +155,35 @@ function convertUtcToLocal(utcString) {
   });
 }
 
-// Instance chính – có interceptor
+// ===================================================
+// AXIOS INSTANCES
+// ===================================================
 const axiosInstance = axios.create({
   baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
   headers: { "Content-Type": "application/json" },
 });
 
-// Instance RAW – không interceptor → dùng để refresh token
 const axiosRaw = axios.create({
   baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
 });
 
-// =========================
+// ===================================================
 // REQUEST INTERCEPTOR
-// =========================
+// ===================================================
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    const authStore = useAuthStore();
+    if (authStore.token) {
+      config.headers.Authorization = `Bearer ${authStore.token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// =========================
-// RESPONSE INTERCEPTOR — AUTO REFRESH TOKEN
-// =========================
-
+// ===================================================
+// RESPONSE INTERCEPTOR — AUTO REFRESH
+// ===================================================
 let isRefreshing = false;
 let refreshSubscribers = [];
 
@@ -199,7 +198,6 @@ function subscribeTokenRefresh(callback) {
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-
   async (error) => {
     const originalRequest = error.config;
 
@@ -231,13 +229,12 @@ axiosInstance.interceptors.response.use(
     if (isRefreshing) {
       return new Promise((resolve) => {
         subscribeTokenRefresh((newToken) => {
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            resolve(axiosInstance(originalRequest));
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          resolve(axiosInstance(originalRequest));
         });
       });
     }
 
-    // Bắt đầu refresh
     isRefreshing = true;
 
     try {
@@ -249,26 +246,19 @@ axiosInstance.interceptors.response.use(
         expiresAt,
       } = res.data;
 
-      // Cập nhật Pinia
       authStore.token = accessToken;
       authStore.refreshToken = newRefreshToken;
-      authStore.expiresAt = convertUtcToLocal(expiresAt);   // ⭐ convert tại đây
+      authStore.expiresAt = convertUtcToLocal(expiresAt);
 
-      // Cập nhật localStorage (chỉ access token + thời gian local)
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("expiresAt", convertUtcToLocal(expiresAt));  // ⭐ convert tại đây
+      console.log("🔄 Refresh token thành công!");
 
-      console.log("🔄 Refresh thành công — token mới đã được cấp!");
-
-      // Báo request đang đợi
       onRefreshed(accessToken);
 
-      // Retry request cũ
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
       return axiosInstance(originalRequest);
 
     } catch (err) {
-      console.error("❌ Refresh token failed:", err);
+      console.error("❌ Refresh token lỗi:", err);
       authStore.logout();
       return Promise.reject(err);
     } finally {
