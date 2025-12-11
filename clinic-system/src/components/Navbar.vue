@@ -103,9 +103,9 @@
                         data-bs-toggle="dropdown" data-bs-offset="0,22">
 
                         <!-- Avatar Circle -->
-                        <div v-if="authStore.user?.name" class="avatar-circle-small me-2"
-                            :style="{ backgroundColor: getColor(authStore.user.name) }">
-                            {{ getInitial(authStore.user.name) }}
+                        <div v-if="authStore.user?.fullName" class="avatar-circle-small me-2"
+                            :style="{ backgroundColor: getColor(authStore.user.fullName) }">
+                            {{ getInitial(authStore.user.fullName) }}
                         </div>
 
                         <!-- Fallback Icon -->
@@ -123,9 +123,9 @@
 
                         <!-- USER INFO -->
                         <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
-                            <div v-if="authStore.user?.name" class="avatar-circle-small me-2"
-                                :style="{ backgroundColor: getColor(authStore.user.name) }">
-                                {{ getInitial(authStore.user.name) }}
+                            <div v-if="authStore.user?.fullName" class="avatar-circle-small me-2"
+                                :style="{ backgroundColor: getColor(authStore.user.fullName) }">
+                                {{ getInitial(authStore.user.fullName) }}
                             </div>
 
                             <div v-else class="avatar-icon-small me-2">
@@ -175,7 +175,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 // Lấy thông tin từ store (hoặc null nếu chưa có)
-const userName = computed(() => authStore.user?.name || "User");
+const userName = computed(() => authStore.user?.fullName || "User");
 const userRole = computed(() => authStore.user?.role || "Role");
 
 const handleLogout = async () => {

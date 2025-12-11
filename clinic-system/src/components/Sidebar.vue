@@ -89,10 +89,10 @@
                     <li class="menu-title"><span>Main Menu</span></li>
                     <li>
                         <ul>
-                            <li v-if="role === 'Admin'">
+                            <li v-if="role === 'admin'">
                                 <router-link to="/admin-dashboard">Admin Dashboard</router-link>
                             </li>
-                            <li v-else-if="role === 'Doctor'">
+                            <li v-else-if="role === 'doctor'">
                                 <router-link to="/doctor-dashboard">Doctor Dashboard</router-link>
                             </li>
                             <li v-else-if="role==null">
