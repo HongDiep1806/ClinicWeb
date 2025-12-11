@@ -33,7 +33,7 @@ app.use(Toast, toastOptions);
 applyTheme();
 
 // Restore session BEFORE mount
-const auth = useAuthStore();
+// const auth = useAuthStore();
 // ❗ Không cần restoreSession nếu bạn dùng persist, nhưng nếu bạn có logic custom thì giữ lại
 // auth.restoreSession?.();
 
