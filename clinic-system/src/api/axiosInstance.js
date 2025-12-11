@@ -123,7 +123,7 @@
 
 // export default axiosInstance;
 import axios from "axios";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "../stores/auth";
 
 // Instance chính – có interceptor
 const axiosInstance = axios.create({
