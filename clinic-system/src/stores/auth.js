@@ -67,16 +67,18 @@ import { defineStore } from "pinia";
 import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
-  // ⭐ persist CHỈ lưu token, expiresAt, user → KHÔNG LƯU refreshToken
+  // ⭐ Persist CHỈ lưu 3 trường — KHÔNG LƯU refreshToken
   persist: {
-    paths: ["token", "expiresAt", "user"],
+    key: "auth",                 // tên lưu trong localStorage
+    storage: localStorage,       // ⭐ BẮT BUỘC phải có
+    paths: ["token", "expiresAt", "user"], 
   },
 
   state: () => ({
-    token: null,          // lưu localStorage
-    refreshToken: null,   // ⭐ chỉ nằm trong RAM
-    expiresAt: null,      
-    user: {},             
+    token: null,
+    refreshToken: null,   // ⭐ KHÔNG được persist → luôn ở RAM
+    expiresAt: null,
+    user: {},
   }),
 
   getters: {
@@ -87,12 +89,11 @@ export const useAuthStore = defineStore("auth", {
   },
 
   actions: {
-    // ⭐ Lưu token
     login(accessToken, user, refreshToken, expiresAt) {
       this.token = accessToken;
-      this.refreshToken = refreshToken;  // KHÔNG lưu ra localStorage
-      this.user = user;
+      this.refreshToken = refreshToken;   // ⭐ RAM ONLY
       this.expiresAt = expiresAt;
+      this.user = user;
     },
 
     logout() {
@@ -101,11 +102,12 @@ export const useAuthStore = defineStore("auth", {
       this.expiresAt = null;
       this.user = {};
 
-      localStorage.removeItem("pinia-auth"); // xoá persist
+      // ⭐ Xoá đúng key persist
+      localStorage.removeItem("auth");
+
       window.location.href = "/login";
     },
 
-    // ⭐ Hàm refresh token (cho router nếu cần)
     async refreshAccessToken() {
       if (!this.refreshToken) return false;
 
@@ -116,7 +118,7 @@ export const useAuthStore = defineStore("auth", {
         );
 
         this.token = res.data.accessToken;
-        this.refreshToken = res.data.refreshToken;
+        this.refreshToken = res.data.refreshToken;  // ⭐ update RAM
         this.expiresAt = res.data.expiresAt;
 
         return true;
