@@ -48,47 +48,40 @@ import { useAuthStore } from "./stores/auth";
 import { applyTheme } from "./utils/applyTheme";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-import axios from "axios";   // ⭐ THÊM DÒNG NÀY
+import axios from "axios";
 
-// Toast options
+// Toast UI config
 const toastOptions = {
-    position: "top-right",
-    timeout: 2500,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
+  position: "top-right",
+  timeout: 2500,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
 };
 
 const app = createApp(App);
 
-// ==============================
-// PINIA + PERSIST
-// ==============================
+// ========== PINIA ==========
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
-
 app.use(pinia);
+
+// ⭐ Restore session ngay sau khi pinia được tạo
+const auth = useAuthStore();
+auth.restoreSession(); // <----- BẮT BUỘC
+
+// ========== PLUGINS ==========
 app.use(router);
 app.use(Toast, toastOptions);
 
-// ==============================
-// ⭐ QUAN TRỌNG — BẬT COOKIE CHO AXIOS TOÀN APP
-// ==============================
+// ⭐ Bật cookie toàn app
 axios.defaults.withCredentials = true;
 
-
-// ==============================
-// OPTIONAL — TỰ REFRESH ACCESS TOKEN KHI MỞ APP
-// ==============================
-
-const auth = useAuthStore();
-
-// Nếu FE load app mà token đã hết hạn → thử refresh
+// Nếu token hết hạn → thử refresh token
 if (auth.token && auth.isTokenExpired) {
-    auth.refreshAccessToken();
+  auth.refreshAccessToken();
 }
 
 applyTheme();
 
-// Mount app
 app.mount("#app");

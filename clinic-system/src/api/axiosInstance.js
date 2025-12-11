@@ -125,98 +125,104 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/auth";
 
-// ============================
-// GLOBAL CONFIG — BẮT BUỘC
-// ============================
-axios.defaults.withCredentials = true;   // ⭐ Cookie sẽ tự gửi trong mọi request
+// ================================================
+// GLOBAL CONFIG – bắt buộc để cookie được gửi đi
+// ================================================
+axios.defaults.withCredentials = true;
 
+const BASE_URL = "https://clinic-management-system-production-2598.up.railway.app/api";
+
+// Instance chính
 const axiosInstance = axios.create({
-  baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true, // ⭐ Cookie đi cùng axiosInstance
+  baseURL: BASE_URL,
+  withCredentials: true,
+  headers: { "Content-Type": "application/json" },
 });
 
+// Instance không dùng interceptors → Dùng refresh token
 const axiosRaw = axios.create({
-  baseURL: "https://clinic-management-system-production-2598.up.railway.app/api",
-  withCredentials: true, // ⭐ Cookie đi cùng axiosRaw
+  baseURL: BASE_URL,
+  withCredentials: true,
 });
 
-// =========================
+// Helper để lấy store đúng cách
+function getAuth() {
+  return useAuthStore();
+}
+
+// ===================================================
 // REQUEST INTERCEPTOR
-// =========================
+// ===================================================
 axiosInstance.interceptors.request.use(
   (config) => {
-    const auth = useAuthStore();
-    const token = auth.token;
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const auth = getAuth();
+    if (auth.token) {
+      config.headers.Authorization = `Bearer ${auth.token}`;
     }
-
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// =========================
-// RESPONSE INTERCEPTOR — COOKIE VERSION
-// =========================
+// ===================================================
+// RESPONSE INTERCEPTOR — TỰ ĐỘNG REFRESH TOKEN
+// ===================================================
 let isRefreshing = false;
 let subscribers = [];
 
-function onRefreshed(token) {
-  subscribers.forEach((cb) => cb(token));
-  subscribers = [];
-}
 function subscribe(cb) {
   subscribers.push(cb);
+}
+
+function onRefreshed(newToken) {
+  subscribers.forEach((cb) => cb(newToken));
+  subscribers = [];
 }
 
 axiosInstance.interceptors.response.use(
   (response) => response,
 
   async (error) => {
-    const auth = useAuthStore();
+    const auth = getAuth();
     const original = error.config;
 
     if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
 
-    // tránh refresh loop
+    // tránh vòng lặp
     if (original._retry) {
       auth.logout();
       return Promise.reject(error);
     }
     original._retry = true;
 
-    // ===== trường hợp refresh =====
+    // ==== Nếu đã có một refresh đang chạy ====
     if (isRefreshing) {
       return new Promise((resolve) => {
-        subscribe((newToken) => {
-          original.headers.Authorization = `Bearer ${newToken}`;
+        subscribe((token) => {
+          original.headers.Authorization = `Bearer ${token}`;
           resolve(axiosInstance(original));
         });
       });
     }
 
+    // ==== BẮT ĐẦU REFRESH TOKEN ====
     isRefreshing = true;
 
     try {
-      const res = await axiosRaw.post("/Auth/refresh", {}); // ⭐ KHÔNG gửi refreshToken
+      const res = await axiosRaw.post("/Auth/refresh", {}); // KHÔNG gửi refreshToken
 
       const newAccess = res.data.accessToken;
       const newExpires = res.data.expiresAt;
 
-      // ⭐ Cập nhật access token vào FE
+      // Lưu access token mới
       auth.token = newAccess;
       auth.expiresAt = newExpires;
 
       onRefreshed(newAccess);
 
-      // gắn token mới vào request cũ
+      // Gắn token mới vào request cũ
       original.headers.Authorization = `Bearer ${newAccess}`;
 
       return axiosInstance(original);

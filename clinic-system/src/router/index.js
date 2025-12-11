@@ -151,21 +151,23 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
 
-  // ❗ Không còn restore refreshToken → chỉ load từ localStorage những gì persist lưu
   const token = auth.token;
   const isExpired = auth.isTokenExpired;
-  const role = auth.user?.role?.toLowerCase();
+  const role = auth.user?.role?.toLowerCase();  // có thể undefined
 
-  // CASE 1 — Không có accessToken → redirect login
+  // CASE 1 — chưa login
   if (!token) {
     if (to.name !== "login") return next({ name: "login" });
     return next();
   }
 
-  // CASE 2 — Token hết hạn → cố refresh (COOKIE tự gửi)
+  // CASE 2 — Token hết hạn → refresh
   if (isExpired) {
     const ok = await auth.refreshAccessToken();
     if (!ok) return next({ name: "login" });
+
+    // Sau refresh → đảm bảo user không bị undefined
+    if (!auth.user) auth.user = {};
   }
 
   // CASE 3 — Đã login → không quay lại trang login
@@ -175,13 +177,13 @@ router.beforeEach(async (to, from, next) => {
     return next({ name: "patient-dashboard" });
   }
 
-  // CASE 4 — Route yêu cầu login nhưng thiếu token
+  // CASE 4 — Route yêu cầu login
   if (to.meta.requiresAuth && !auth.token) {
     return next({ name: "login" });
   }
 
-  // CASE 5 — Check role
-  if (to.meta.allowRoles && !to.meta.allowRoles.includes(role)) {
+  // CASE 5 — Kiểm tra role (chỉ khi role có tồn tại)
+  if (role && to.meta.allowRoles && !to.meta.allowRoles.includes(role)) {
     if (role === "admin") return next({ name: "admin-dashboard" });
     if (role === "doctor") return next({ name: "doctor-dashboard" });
     return next({ name: "patient-dashboard" });
@@ -189,5 +191,6 @@ router.beforeEach(async (to, from, next) => {
 
   next();
 });
+
 
 export default router;

@@ -3,7 +3,7 @@
 // export const useAuthStore = defineStore("auth", {
 //   state: () => ({
 //     token: localStorage.getItem("accessToken") || null,
-//     user: JSON.parse(localStorage.getItem("user")) || {}, 
+//     user: JSON.parse(localStorage.getItem("user")) || {},
 //     refreshToken: localStorage.getItem("refreshToken") || null,
 //     expiresAt: localStorage.getItem("expiresAt") || null,
 //   }),
@@ -11,7 +11,7 @@
 //   actions: {
 //     login(token, user, refreshToken, expiresAt) {
 //       this.token = token;
-//       this.user = user || {}; 
+//       this.user = user || {};
 //       this.refreshToken = refreshToken;
 //       this.expiresAt = expiresAt;
 
@@ -57,7 +57,7 @@
 //       const expiresAt = localStorage.getItem("expiresAt");
 
 //       this.token = token || null;
-//       this.user = user ? JSON.parse(user) : {}; 
+//       this.user = user ? JSON.parse(user) : {};
 //       this.refreshToken = refreshToken || null;
 //       this.expiresAt = expiresAt || null;
 //     },
@@ -72,22 +72,21 @@ export const useAuthStore = defineStore("auth", {
     storage: localStorage,
     serializer: {
       serialize(value) {
-        // Không bao giờ lưu refreshToken
+        // Không bao giờ lưu refreshToken (do dùng cookie)
         const { refreshToken, ...safeData } = value;
         return JSON.stringify(safeData);
       },
       deserialize(value) {
         return JSON.parse(value);
-      }
-    }
+      },
+    },
   },
 
   state: () => ({
     token: null,
     expiresAt: null,
-    user: {},
-    // ❗ refreshToken sẽ không được dùng nữa (do BE lưu trong cookie)
-    refreshToken: null,
+    user: {}, // luôn để {}
+    refreshToken: null, // không dùng nữa nhưng để có property
   }),
 
   getters: {
@@ -98,51 +97,79 @@ export const useAuthStore = defineStore("auth", {
   },
 
   actions: {
-    // ⭐ LOGIN — FE chỉ nhận accessToken + user + expiresAt
+    decodeToken(token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        this.user = {
+          id: payload.sub,
+          email: payload.email,
+          role: payload.role?.toLowerCase(),
+        };
+      } catch (e) {
+        console.error("Decode token failed:", e);
+        this.user = {};
+      }
+    },
+    restoreSession() {
+      const stored = localStorage.getItem("auth");
+      if (stored) {
+        const data = JSON.parse(stored);
+        this.token = data.token || null;
+        this.expiresAt = data.expiresAt || null;
+
+        if (this.token) {
+          this.decodeToken(this.token); // ⭐ Lấy lại role khi reload
+        }
+      }
+    },
+    // ⭐ FE nhận từ BE: accessToken + expiresAt
     login(accessToken, user, expiresAt) {
       this.token = accessToken;
       this.expiresAt = expiresAt;
-      this.user = user;
-      // ❗ Không có refreshToken ở đây
+      this.user = user || {}; // tránh null
+      this.decodeToken(accessToken);
     },
 
-    // ⭐ LOGOUT — FE chỉ gọi API xoá cookie
+    // ⭐ Logout — chỉ xóa cookie BE & reset state FE
     async logout() {
       try {
         await axios.post(
           "https://clinic-management-system-production-2598.up.railway.app/api/Auth/logout",
           {},
-          { withCredentials: true }    // ❗ cookie gửi lên để BE xoá
+          { withCredentials: true }
         );
       } catch (err) {
         console.warn("Logout API error:", err);
       }
 
+      // reset state
       this.token = null;
       this.expiresAt = null;
       this.user = {};
 
+      // vì persist → phải remove đúng key
       localStorage.removeItem("auth");
 
       window.location.href = "/login";
     },
 
-    // ⭐ REFRESH TOKEN — FE KHÔNG gửi refreshToken nữa
+    // ⭐ Refresh access token từ cookie
     async refreshAccessToken() {
       try {
         const res = await axios.post(
           "https://clinic-management-system-production-2598.up.railway.app/api/Auth/refresh",
           {},
-          { withCredentials: true }   // cookie tự gửi
+          { withCredentials: true }
         );
 
         this.token = res.data.accessToken;
         this.expiresAt = res.data.expiresAt;
+        this.decodeToken(this.token);
 
         return true;
       } catch (err) {
         console.error("Refresh token failed:", err);
-        this.logout();
+        await this.logout();
         return false;
       }
     },
