@@ -152,7 +152,7 @@ router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
 
   // Khôi phục từ localStorage khi load app
-  auth.restoreSession();
+  //auth.restoreSession();
 
   const token = auth.token;
   const refresh = auth.refreshToken;
