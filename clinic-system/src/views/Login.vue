@@ -109,7 +109,7 @@ export default {
       password: "",
       loading: false,
       errorMessage: "",
-      howPassword: false,  
+      showPassword: false,  
     };
   },
 

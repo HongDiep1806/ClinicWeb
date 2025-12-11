@@ -64,26 +64,34 @@
 //   },
 // });
 import { defineStore } from "pinia";
+import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
+  // ⭐ persist CHỈ lưu token, expiresAt, user → KHÔNG LƯU refreshToken
+  persist: {
+    paths: ["token", "expiresAt", "user"],
+  },
+
   state: () => ({
-    token: null,
-    user: {},
-    refreshToken: null,
-    expiresAt: null,
+    token: null,          // lưu localStorage
+    refreshToken: null,   // ⭐ chỉ nằm trong RAM
+    expiresAt: null,      
+    user: {},             
   }),
 
-  // ⭐ PERSIST TOÀN BỘ STATE
-  persist: {
-    key: "auth-store",
-    storage: window.localStorage, // có thể đổi thành sessionStorage tuỳ ý
+  getters: {
+    isTokenExpired(state) {
+      if (!state.expiresAt) return true;
+      return new Date(state.expiresAt) < new Date();
+    },
   },
 
   actions: {
-    login(token, user, refreshToken, expiresAt) {
-      this.token = token;
+    // ⭐ Lưu token
+    login(accessToken, user, refreshToken, expiresAt) {
+      this.token = accessToken;
+      this.refreshToken = refreshToken;  // KHÔNG lưu ra localStorage
       this.user = user;
-      this.refreshToken = refreshToken;
       this.expiresAt = expiresAt;
     },
 
@@ -93,8 +101,29 @@ export const useAuthStore = defineStore("auth", {
       this.expiresAt = null;
       this.user = {};
 
-      // Không dùng localStorage.clear() nữa
+      localStorage.removeItem("pinia-auth"); // xoá persist
       window.location.href = "/login";
+    },
+
+    // ⭐ Hàm refresh token (cho router nếu cần)
+    async refreshAccessToken() {
+      if (!this.refreshToken) return false;
+
+      try {
+        const res = await axios.post(
+          "https://clinic-management-system-production-2598.up.railway.app/api/Auth/refresh",
+          { refreshToken: this.refreshToken }
+        );
+
+        this.token = res.data.accessToken;
+        this.refreshToken = res.data.refreshToken;
+        this.expiresAt = res.data.expiresAt;
+
+        return true;
+      } catch {
+        this.logout();
+        return false;
+      }
     },
   },
 });
