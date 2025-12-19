@@ -17,13 +17,11 @@
             <!-- PATIENT -->
             <div class="mb-3">
               <label class="form-label">Patient *</label>
-              <select v-model="form.patientId" class="form-select">
-                <option value="">Select</option>
-                <option v-for="p in patients" :key="p.userId" :value="p.userId">
-                  {{ p.fullName }}
-                </option>
-              </select>
+
+              <Multiselect v-model="selectedPatient" :options="patients" label="fullName" track-by="userId"
+                placeholder="Search patient..." :searchable="true" :allow-empty="true" />
             </div>
+
 
             <!-- DEPARTMENT -->
             <div class="mb-3">
@@ -40,12 +38,7 @@
             <div class="mb-3">
               <label class="form-label">Date *</label>
 
-              <input
-                id="datePicker"
-                type="text"
-                class="form-control datetimepicker"
-                placeholder="DD/MM/YYYY"
-              />
+              <input id="datePicker" type="text" class="form-control datetimepicker" placeholder="DD/MM/YYYY" />
 
               <p v-if="isWeekend" class="text-danger small mt-1">
                 This date falls on a weekend. No doctors available.
@@ -93,9 +86,14 @@ import { getDepartments } from "../services/departmentService";
 import { getDoctorsByWeekday } from "../services/appointmentService";
 import { bookAppointment } from "../services/appointmentService";
 import { useToast } from "vue-toastification";
+import Multiselect from "vue-multiselect";
+import "vue-multiselect/dist/vue-multiselect.css";
+import { watch } from "vue";
+
+
 
 export default {
-  components: { Sidebar, Navbar },
+  components: { Sidebar, Navbar, Multiselect },
 
   setup() {
     const router = useRouter();
@@ -105,6 +103,8 @@ export default {
     const departments = ref([]);
     const doctors = ref([]);
     const isWeekend = ref(false);
+    const selectedPatient = ref(null);
+
 
     const form = ref({
       patientId: "",
@@ -145,35 +145,38 @@ export default {
         d => d.departmentId == form.value.departmentId
       );
     };
+    watch(selectedPatient, (val) => {
+      form.value.patientId = val ? val.userId : "";
+    });
 
 
     // ============================================
     // MOUNTED
     // ============================================
-   onMounted(async () => {
-  patients.value = (await getAllPatients()).data.filter(p => p.status === "Active");
+    onMounted(async () => {
+      patients.value = (await getAllPatients()).data.filter(p => p.status === "Active");
 
-  // 🔥 CHỈ LẤY DEPARTMENT ACTIVE
-  const all = await getDepartments();
-  departments.value = all.filter(d => d.status === "Active");
+      // 🔥 CHỈ LẤY DEPARTMENT ACTIVE
+      const all = await getDepartments();
+      departments.value = all.filter(d => d.status === "Active");
 
-  const today = new Date();
-  const iso = moment(today).format("YYYY-MM-DD");
-  const display = moment(today).format("DD/MM/YYYY");
+      const today = new Date();
+      const iso = moment(today).format("YYYY-MM-DD");
+      const display = moment(today).format("DD/MM/YYYY");
 
-  $("#datePicker").val(display);
-  form.value.date = iso;
+      $("#datePicker").val(display);
+      form.value.date = iso;
 
-  $("#datePicker")
-    .datetimepicker({
-      format: "DD/MM/YYYY",
-      minDate: today
-    })
-    .on("dp.change", async (e) => {
-      form.value.date = e.date.format("YYYY-MM-DD");
-      await loadFilteredDoctors();
+      $("#datePicker")
+        .datetimepicker({
+          format: "DD/MM/YYYY",
+          minDate: today
+        })
+        .on("dp.change", async (e) => {
+          form.value.date = e.date.format("YYYY-MM-DD");
+          await loadFilteredDoctors();
+        });
     });
-});
 
 
     const submit = async () => {
