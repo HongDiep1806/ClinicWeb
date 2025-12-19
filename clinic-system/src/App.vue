@@ -13,8 +13,7 @@ export default {
 <style>
 /* .toggle-theme {
   display: none !important;
-} */
- /* Option đang hover */
+} *//* Option đang hover */
 .multiselect__option--highlight {
   background: var(--theme-navy);
   color: #fff;
