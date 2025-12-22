@@ -18,9 +18,10 @@
             <div class="mb-3">
               <label class="form-label">Patient *</label>
 
-              <v-select v-model="selectedPatient" :options="patients" label="fullName" :reduce="p => p.userId"
-                placeholder="Search patient..." class="vselect-bootstrap" />
+              <VueformSelect v-model="form.patientId" :options="patients" value-prop="userId" label-prop="fullName"
+                searchable placeholder="Search patient..." />
             </div>
+
 
 
             <!-- DEPARTMENT -->
@@ -89,11 +90,18 @@ import { useToast } from "vue-toastification";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import { watch } from "vue";
+import VueformSelect from "@vueform/select";
+import "@vueform/select/themes/bootstrap.css";
+
 
 
 export default {
-  components: { Sidebar, Navbar, vSelect },
-
+  components: {
+    Sidebar,
+    Navbar,
+    VueformSelect
+  }
+  ,
   setup() {
     const router = useRouter();
     const toast = useToast();
@@ -145,8 +153,8 @@ export default {
       );
     };
     watch(selectedPatient, (val) => {
-  form.value.patientId = val || "";
-});
+      form.value.patientId = val || "";
+    });
 
 
 
@@ -208,34 +216,9 @@ export default {
 };
 </script>
 <style scoped>
-  /* ===== vue-select theo theme bootstrap/navy ===== */
-.vselect-bootstrap .vs__dropdown-toggle {
-  height: 38px;
-  border-radius: 6px;
-  border: 1px solid #ced4da;
-  background-color: #fff;
+/* ===== vue-select theo theme bootstrap/navy ===== */
+.vf-select {
+  --vf-primary: #0d6efd;
+  /* bootstrap primary / navy */
 }
-
-.vselect-bootstrap .vs__search,
-.vselect-bootstrap .vs__search:focus {
-  margin: 0;
-  padding: 6px 10px;
-  font-size: 14px;
-}
-
-.vselect-bootstrap .vs__selected {
-  font-size: 14px;
-  color: #0a2540; /* navy */
-}
-
-.vselect-bootstrap .vs__dropdown-menu {
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.vselect-bootstrap .vs__dropdown-option--highlight {
-  background: #0d6efd; /* primary */
-  color: #fff;
-}
-
-  </style>
+</style>
