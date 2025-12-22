@@ -714,4 +714,15 @@ export default {
   padding: 6px 12px !important;
   font-size: 14px;
 }
+/* TẮT icon calendar của input type="date" */
+.filter-group input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+/* Giữ nguyên invalid icon của Bootstrap */
+.filter-group input[type="date"].is-invalid {
+  background-image: var(--bs-form-invalid-bg-icon);
+}
+
+
 </style>
