@@ -715,9 +715,9 @@ export default {
   font-size: 14px;
 }
 /* TẮT icon calendar của input type="date" */
-.filter-group input[type="date"].is-invalid::-webkit-calendar-picker-indicator {
+/* .filter-group input[type="date"].is-invalid::-webkit-calendar-picker-indicator {
   display: none;
-}
+} */
 
 /* Giữ nguyên invalid icon của Bootstrap */
 .filter-group input[type="date"].is-invalid {
