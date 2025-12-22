@@ -20,29 +20,42 @@
         <div class="card">
           <div class="card-body">
 
-            <!-- PATIENT -->
-            <div class="mb-3">
+            <!-- PATIENT (SEARCH + SELECT 1 INPUT) -->
+            <div class="mb-3 position-relative patient-select">
               <label class="form-label">Patient *</label>
 
-              <!-- SEARCH -->
               <input
                 type="text"
-                class="form-control mb-2"
+                class="form-control"
                 placeholder="Search patient..."
-                v-model="patientKeyword"
+                v-model="patientSearch"
+                @focus="showPatientDropdown = true"
+                @input="showPatientDropdown = true"
               />
 
-              <!-- SELECT -->
-              <select v-model="form.patientId" class="form-select">
-                <option value="">Select</option>
-                <option
+              <!-- DROPDOWN -->
+              <ul
+                v-if="showPatientDropdown && filteredPatients.length"
+                class="dropdown-menu show w-100 mt-1 shadow-sm"
+                style="max-height:220px; overflow-y:auto;"
+              >
+                <li
                   v-for="p in filteredPatients"
                   :key="p.userId"
-                  :value="p.userId"
+                  class="dropdown-item"
+                  @click="selectPatient(p)"
                 >
                   {{ p.fullName }}
-                </option>
-              </select>
+                </li>
+              </ul>
+
+              <!-- EMPTY -->
+              <div
+                v-if="showPatientDropdown && !filteredPatients.length"
+                class="dropdown-menu show w-100 mt-1 p-2 text-muted small"
+              >
+                No patients found
+              </div>
             </div>
 
             <!-- DEPARTMENT -->
@@ -155,8 +168,6 @@ export default {
     const doctors = ref([]);
     const isWeekend = ref(false);
 
-    const patientKeyword = ref("");
-
     const form = ref({
       patientId: "",
       departmentId: "",
@@ -164,26 +175,35 @@ export default {
       date: ""
     });
 
-    // SEARCH PATIENT
+    /* ===== PATIENT AUTOCOMPLETE ===== */
+    const patientSearch = ref("");
+    const showPatientDropdown = ref(false);
+
     const filteredPatients = computed(() => {
-      if (!patientKeyword.value) return patients.value;
+      if (!patientSearch.value) return patients.value;
 
       return patients.value.filter(p =>
         p.fullName
           .toLowerCase()
-          .includes(patientKeyword.value.toLowerCase())
+          .includes(patientSearch.value.toLowerCase())
       );
     });
 
+    const selectPatient = (patient) => {
+      form.value.patientId = patient.userId;
+      patientSearch.value = patient.fullName;
+      showPatientDropdown.value = false;
+    };
+
+    /* ===== COMMON ===== */
     const goBack = () => router.back();
 
     const getWeekday = (dateStr) => {
       const day = new Date(dateStr).getDay();
       if (day === 0 || day === 6) return null;
-      return day - 1; // Monday = 0
+      return day - 1;
     };
 
-    // LOAD DOCTORS BY DEPARTMENT + WEEKDAY
     const loadFilteredDoctors = async () => {
       if (!form.value.departmentId || !form.value.date) return;
 
@@ -229,6 +249,13 @@ export default {
           form.value.date = e.date.format("YYYY-MM-DD");
           await loadFilteredDoctors();
         });
+
+      /* CLOSE DROPDOWN WHEN CLICK OUTSIDE */
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".patient-select")) {
+          showPatientDropdown.value = false;
+        }
+      });
     });
 
     const submit = async () => {
@@ -253,8 +280,10 @@ export default {
     return {
       form,
       patients,
-      patientKeyword,
+      patientSearch,
       filteredPatients,
+      showPatientDropdown,
+      selectPatient,
       departments,
       doctors,
       isWeekend,
