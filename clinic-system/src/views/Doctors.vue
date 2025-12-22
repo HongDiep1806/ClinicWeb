@@ -42,7 +42,7 @@
               <div class="card-body d-flex align-items-center">
 
                 <!-- AVATAR -->
-                <div class="doctor-avatar">
+                <div class="doctor-avatar" style="margin-right:15px">
                   <div class="avatar-circle" :style="{ backgroundColor: getColor(d.fullName) }">
                     {{ getInitial(d.fullName) }}
                   </div>
