@@ -34,7 +34,6 @@
                   @input="showPatientDropdown = true"
                 />
 
-                <!-- DROPDOWN ICON -->
                 <span
                   class="input-group-text bg-white"
                   style="cursor:pointer"
@@ -44,7 +43,6 @@
                 </span>
               </div>
 
-              <!-- DROPDOWN LIST -->
               <ul
                 v-if="showPatientDropdown && filteredPatients.length"
                 class="dropdown-menu show w-100 mt-1 shadow-sm"
@@ -60,7 +58,6 @@
                 </li>
               </ul>
 
-              <!-- EMPTY -->
               <div
                 v-if="showPatientDropdown && !filteredPatients.length"
                 class="dropdown-menu show w-100 mt-1 p-2 text-muted small"
@@ -69,23 +66,50 @@
               </div>
             </div>
 
-            <!-- DEPARTMENT -->
-            <div class="mb-3">
+            <!-- DEPARTMENT (SEARCH + SELECT + ICON) -->
+            <div class="mb-3 position-relative department-select">
               <label class="form-label">Department *</label>
-              <select
-                v-model="form.departmentId"
-                class="form-select"
-                @change="loadFilteredDoctors"
+
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search or select department..."
+                  v-model="departmentSearch"
+                  @focus="showDepartmentDropdown = true"
+                  @input="showDepartmentDropdown = true"
+                />
+
+                <span
+                  class="input-group-text bg-white"
+                  style="cursor:pointer"
+                  @click="toggleDepartmentDropdown"
+                >
+                  <i class="ti ti-chevron-down"></i>
+                </span>
+              </div>
+
+              <ul
+                v-if="showDepartmentDropdown && filteredDepartments.length"
+                class="dropdown-menu show w-100 mt-1 shadow-sm"
+                style="max-height:220px; overflow-y:auto;"
               >
-                <option value="">Select</option>
-                <option
-                  v-for="d in departments"
+                <li
+                  v-for="d in filteredDepartments"
                   :key="d.departmentId"
-                  :value="d.departmentId"
+                  class="dropdown-item"
+                  @click="selectDepartment(d)"
                 >
                   {{ d.name }}
-                </option>
-              </select>
+                </li>
+              </ul>
+
+              <div
+                v-if="showDepartmentDropdown && !filteredDepartments.length"
+                class="dropdown-menu show w-100 mt-1 p-2 text-muted small"
+              >
+                No departments found
+              </div>
             </div>
 
             <!-- DATE -->
@@ -104,27 +128,54 @@
               </p>
             </div>
 
-            <!-- DOCTOR -->
-            <div class="mb-3">
+            <!-- DOCTOR (SEARCH + SELECT + ICON) -->
+            <div class="mb-3 position-relative doctor-select">
               <label class="form-label">Doctor *</label>
 
-              <select
-                v-model="form.doctorId"
-                class="form-select"
-                :disabled="doctors.length === 0"
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  :disabled="doctors.length === 0"
+                  placeholder="Search or select doctor..."
+                  v-model="doctorSearch"
+                  @focus="doctors.length && (showDoctorDropdown = true)"
+                  @input="doctors.length && (showDoctorDropdown = true)"
+                />
+
+                <span
+                  class="input-group-text bg-white"
+                  :style="{ cursor: doctors.length ? 'pointer' : 'not-allowed', opacity: doctors.length ? 1 : 0.6 }"
+                  @click="doctors.length && toggleDoctorDropdown()"
+                >
+                  <i class="ti ti-chevron-down"></i>
+                </span>
+              </div>
+
+              <ul
+                v-if="showDoctorDropdown && filteredDoctors.length"
+                class="dropdown-menu show w-100 mt-1 shadow-sm"
+                style="max-height:220px; overflow-y:auto;"
               >
-                <option value="">Select Doctor</option>
-                <option
-                  v-for="d in doctors"
+                <li
+                  v-for="d in filteredDoctors"
                   :key="d.userId"
-                  :value="d.userId"
+                  class="dropdown-item"
+                  @click="selectDoctor(d)"
                 >
                   {{ d.fullName }}
-                </option>
-              </select>
+                </li>
+              </ul>
+
+              <div
+                v-if="showDoctorDropdown && !filteredDoctors.length"
+                class="dropdown-menu show w-100 mt-1 p-2 text-muted small"
+              >
+                No doctors found
+              </div>
 
               <p
-                v-if="!isWeekend && doctors.length === 0 && form.date"
+                v-if="!isWeekend && doctors.length === 0 && form.date && form.departmentId"
                 class="text-danger small mt-1"
               >
                 No doctors available on this weekday.
@@ -157,18 +208,12 @@ import Navbar from "../components/Navbar.vue";
 
 import { getAllPatients } from "../services/userService";
 import { getDepartments } from "../services/departmentService";
-import {
-  getDoctorsByWeekday,
-  bookAppointment
-} from "../services/appointmentService";
+import { getDoctorsByWeekday, bookAppointment } from "../services/appointmentService";
 
 import { useToast } from "vue-toastification";
 
 export default {
-  components: {
-    Sidebar,
-    Navbar
-  },
+  components: { Sidebar, Navbar },
 
   setup() {
     const router = useRouter();
@@ -192,11 +237,8 @@ export default {
 
     const filteredPatients = computed(() => {
       if (!patientSearch.value) return patients.value;
-
       return patients.value.filter(p =>
-        p.fullName
-          .toLowerCase()
-          .includes(patientSearch.value.toLowerCase())
+        (p.fullName || "").toLowerCase().includes(patientSearch.value.toLowerCase())
       );
     });
 
@@ -208,6 +250,55 @@ export default {
 
     const togglePatientDropdown = () => {
       showPatientDropdown.value = !showPatientDropdown.value;
+    };
+
+    /* ===== DEPARTMENT AUTOCOMPLETE ===== */
+    const departmentSearch = ref("");
+    const showDepartmentDropdown = ref(false);
+
+    const filteredDepartments = computed(() => {
+      if (!departmentSearch.value) return departments.value;
+      return departments.value.filter(d =>
+        (d.name || "").toLowerCase().includes(departmentSearch.value.toLowerCase())
+      );
+    });
+
+    const selectDepartment = async (dept) => {
+      form.value.departmentId = dept.departmentId;
+      departmentSearch.value = dept.name;
+      showDepartmentDropdown.value = false;
+
+      // clear doctor when department changes
+      form.value.doctorId = "";
+      doctorSearch.value = "";
+      doctors.value = [];
+
+      await loadFilteredDoctors();
+    };
+
+    const toggleDepartmentDropdown = () => {
+      showDepartmentDropdown.value = !showDepartmentDropdown.value;
+    };
+
+    /* ===== DOCTOR AUTOCOMPLETE ===== */
+    const doctorSearch = ref("");
+    const showDoctorDropdown = ref(false);
+
+    const filteredDoctors = computed(() => {
+      if (!doctorSearch.value) return doctors.value;
+      return doctors.value.filter(d =>
+        (d.fullName || "").toLowerCase().includes(doctorSearch.value.toLowerCase())
+      );
+    });
+
+    const selectDoctor = (doc) => {
+      form.value.doctorId = doc.userId;
+      doctorSearch.value = doc.fullName;
+      showDoctorDropdown.value = false;
+    };
+
+    const toggleDoctorDropdown = () => {
+      showDoctorDropdown.value = !showDoctorDropdown.value;
     };
 
     /* ===== COMMON ===== */
@@ -223,30 +314,38 @@ export default {
       if (!form.value.departmentId || !form.value.date) return;
 
       const weekday = getWeekday(form.value.date);
-
       if (weekday === null) {
         doctors.value = [];
         isWeekend.value = true;
+
+        // clear doctor on weekend
+        form.value.doctorId = "";
+        doctorSearch.value = "";
+        showDoctorDropdown.value = false;
         return;
       }
 
       isWeekend.value = false;
 
       const res = await getDoctorsByWeekday(weekday);
-      doctors.value = res.data.filter(
+      const list = res.data || [];
+
+      doctors.value = list.filter(
         d => d.departmentId == form.value.departmentId
       );
+
+      // nếu doctor list thay đổi mà doctor cũ không còn, clear
+      if (form.value.doctorId && !doctors.value.some(x => x.userId === form.value.doctorId)) {
+        form.value.doctorId = "";
+        doctorSearch.value = "";
+      }
     };
 
     onMounted(async () => {
-      patients.value = (await getAllPatients()).data.filter(
-        p => p.status === "Active"
-      );
+      patients.value = (await getAllPatients()).data.filter(p => p.status === "Active");
 
       const allDepartments = await getDepartments();
-      departments.value = allDepartments.filter(
-        d => d.status === "Active"
-      );
+      departments.value = allDepartments.filter(d => d.status === "Active");
 
       const today = new Date();
       const iso = moment(today).format("YYYY-MM-DD");
@@ -265,23 +364,19 @@ export default {
           await loadFilteredDoctors();
         });
 
-      /* CLOSE DROPDOWN WHEN CLICK OUTSIDE */
+      /* CLOSE DROPDOWNS WHEN CLICK OUTSIDE */
       document.addEventListener("click", (e) => {
-        if (!e.target.closest(".patient-select")) {
-          showPatientDropdown.value = false;
-        }
+        if (!e.target.closest(".patient-select")) showPatientDropdown.value = false;
+        if (!e.target.closest(".department-select")) showDepartmentDropdown.value = false;
+        if (!e.target.closest(".doctor-select")) showDoctorDropdown.value = false;
       });
     });
 
     const submit = async () => {
-      if (!form.value.patientId)
-        return toast.error("Please select patient");
-      if (!form.value.departmentId)
-        return toast.error("Please select department");
-      if (!form.value.date)
-        return toast.error("Please select date");
-      if (!form.value.doctorId)
-        return toast.error("Please select doctor");
+      if (!form.value.patientId) return toast.error("Please select patient");
+      if (!form.value.departmentId) return toast.error("Please select department");
+      if (!form.value.date) return toast.error("Please select date");
+      if (!form.value.doctorId) return toast.error("Please select doctor");
 
       try {
         await bookAppointment(form.value);
@@ -300,8 +395,21 @@ export default {
       showPatientDropdown,
       selectPatient,
       togglePatientDropdown,
+
       departments,
+      departmentSearch,
+      filteredDepartments,
+      showDepartmentDropdown,
+      selectDepartment,
+      toggleDepartmentDropdown,
+
       doctors,
+      doctorSearch,
+      filteredDoctors,
+      showDoctorDropdown,
+      selectDoctor,
+      toggleDoctorDropdown,
+
       isWeekend,
       loadFilteredDoctors,
       submit,
