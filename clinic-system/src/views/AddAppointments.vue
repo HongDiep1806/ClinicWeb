@@ -20,20 +20,31 @@
         <div class="card">
           <div class="card-body">
 
-            <!-- PATIENT (SEARCH + SELECT 1 INPUT) -->
+            <!-- PATIENT (SEARCH + SELECT + ICON) -->
             <div class="mb-3 position-relative patient-select">
               <label class="form-label">Patient *</label>
 
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Search patient..."
-                v-model="patientSearch"
-                @focus="showPatientDropdown = true"
-                @input="showPatientDropdown = true"
-              />
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search or select patient..."
+                  v-model="patientSearch"
+                  @focus="showPatientDropdown = true"
+                  @input="showPatientDropdown = true"
+                />
 
-              <!-- DROPDOWN -->
+                <!-- DROPDOWN ICON -->
+                <span
+                  class="input-group-text bg-white"
+                  style="cursor:pointer"
+                  @click="togglePatientDropdown"
+                >
+                  <i class="ti ti-chevron-down"></i>
+                </span>
+              </div>
+
+              <!-- DROPDOWN LIST -->
               <ul
                 v-if="showPatientDropdown && filteredPatients.length"
                 class="dropdown-menu show w-100 mt-1 shadow-sm"
@@ -195,6 +206,10 @@ export default {
       showPatientDropdown.value = false;
     };
 
+    const togglePatientDropdown = () => {
+      showPatientDropdown.value = !showPatientDropdown.value;
+    };
+
     /* ===== COMMON ===== */
     const goBack = () => router.back();
 
@@ -284,6 +299,7 @@ export default {
       filteredPatients,
       showPatientDropdown,
       selectPatient,
+      togglePatientDropdown,
       departments,
       doctors,
       isWeekend,
