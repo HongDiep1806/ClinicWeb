@@ -280,15 +280,8 @@ export default {
       }
 
       const weekdayIndex = getWeekday(form.value.date);
-      if (weekdayIndex === null) {
-        doctors.value = [];
-        isWeekend.value = true;
-        return;
-      }
-
       isWeekend.value = false;
 
-      // 1️⃣ Lấy danh sách doctor theo weekday (API có sẵn)
       const res = await getDoctorsByWeekday(weekdayIndex);
       const doctorList = res.data || [];
 
@@ -301,13 +294,13 @@ export default {
         "Saturday",
         "Sunday"
       ];
-      const dayName = weekdayNames[new Date(form.value.date).getDay() - 1];
+
+      // ✅ DÒNG QUAN TRỌNG
+      const dayName = weekdayNames[weekdayIndex];
 
       const matchedDoctors = [];
 
-      // 2️⃣ Duyệt từng doctor → check schedule
       for (const doc of doctorList) {
-        // lọc khoa trước cho nhẹ
         if (doc.departmentId != form.value.departmentId) continue;
 
         const schRes = await getScheduleByDoctor(doc.userId);
@@ -317,8 +310,7 @@ export default {
           const start = s.startTime.substring(0, 5);
           const shift =
             start === "08:00" ? "Morning" :
-              start === "13:00" ? "Afternoon" :
-                "";
+              start === "13:00" ? "Afternoon" : "";
 
           return (
             s.dayOfWeek === dayName &&
@@ -326,14 +318,11 @@ export default {
           );
         });
 
-        if (matched) {
-          matchedDoctors.push(doc);
-        }
+        if (matched) matchedDoctors.push(doc);
       }
 
       doctors.value = matchedDoctors;
 
-      // clear doctor nếu doctor cũ không còn hợp lệ
       if (!doctors.value.some(d => d.userId === form.value.doctorId)) {
         form.value.doctorId = "";
         doctorSearch.value = "";
