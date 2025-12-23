@@ -368,16 +368,26 @@ export default {
       if (!form.value.patientId) return toast.error("Please select patient");
       if (!form.value.departmentId) return toast.error("Please select department");
       if (!form.value.date) return toast.error("Please select date");
+      if (!form.value.shift) return toast.error("Please select work shift");
       if (!form.value.doctorId) return toast.error("Please select doctor");
 
+      const payload = {
+        patientId: form.value.patientId,
+        doctorId: form.value.doctorId,
+        date: form.value.date,        // YYYY-MM-DD
+        reason: null                  // hoặc "" nếu muốn
+      };
+
       try {
-        await bookAppointment(form.value);
+        await bookAppointment(payload);
         toast.success("Appointment created!");
         router.back();
-      } catch {
+      } catch (err) {
+        console.error(err);
         toast.error("Failed to create appointment");
       }
     };
+
 
     return {
       form,
