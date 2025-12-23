@@ -39,11 +39,12 @@
                 <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 mb-3 pb-3 border-bottom">
                     <div class="flex-grow-1">
                         <h4 class="fw-bold mb-0"> Doctor Schedule<span
-                                class="badge badge-soft-primary fs-13 fw-medium ms-2">Total Doctors : {{ doctors.length }}</span></h4>
+                                class="badge badge-soft-primary fs-13 fw-medium ms-2">Total Doctors : {{ doctors.length
+                                }}</span></h4>
                     </div>
                     <!-- <div class="text-end d-flex"> -->
-                        <!-- dropdown-->
-                        <!-- <div class="dropdown me-1">
+                    <!-- dropdown-->
+                    <!-- <div class="dropdown me-1">
                             <a href="javascript:void(0);"
                                 class="btn btn-md fs-14 fw-normal border bg-white rounded text-dark d-inline-flex align-items-center"
                                 data-bs-toggle="dropdown">
@@ -785,7 +786,9 @@
                     <!-- Footer -->
                     <div class="modal-footer">
                         <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                        <button class="btn btn-primary" @click="saveSchedule">Save</button>
+                        <button class="btn btn-primary" @click="saveAllSchedules">
+                            Save Weekly Schedule
+                        </button>
                     </div>
 
                 </div>
@@ -880,7 +883,7 @@ export default {
 
                 // Map DepartmentName
                 this.doctors = this.doctors
-                    .filter(d => d.status === "Active")  
+                    .filter(d => d.status === "Active")
                     .map(doc => ({
                         ...doc,
                         departmentName:
@@ -1006,6 +1009,61 @@ export default {
                 useToast().error("Save failed!");
             }
         }
+        ,
+        async saveAllSchedules() {
+            const toast = useToast();
+
+            try {
+                const requests = [];
+
+                for (let day of this.days) {
+                    const item = this.schedules[day];
+
+                    // ❌ Không assigned nhưng có schedule → DELETE
+                    if (!item.isAssigned && item.scheduleId) {
+                        requests.push(deleteSchedule(item.scheduleId));
+                        item.scheduleId = null;
+                    }
+
+                    // ✅ Assigned nhưng chưa có schedule → CREATE
+                    if (item.isAssigned && !item.scheduleId) {
+                        const payload = {
+                            doctorId: this.selectedDoctor.userId,
+                            dayOfWeek: day,
+                            startTime: item.startTime + ":00",
+                            endTime: item.endTime + ":00",
+                            roomNumber: item.roomNumber
+                        };
+
+                        requests.push(
+                            createSchedule(payload).then(res => {
+                                if (res?.data?.scheduleId) {
+                                    item.scheduleId = res.data.scheduleId;
+                                }
+                            })
+                        );
+                    }
+
+                    // ✅ Assigned + đã có scheduleId → bỏ qua (hoặc update nếu sau này có API update)
+                }
+
+                if (requests.length === 0) {
+                    toast.info("No changes to save");
+                    return;
+                }
+
+                // ⏳ Chờ tất cả API hoàn tất
+                await Promise.all(requests);
+
+                toast.success("Weekly schedule saved successfully");
+                this.closeModal();
+
+            } catch (error) {
+                console.error("Save weekly schedule error:", error);
+                toast.error("Failed to save weekly schedule");
+            }
+        }
+
 
     }
 }
