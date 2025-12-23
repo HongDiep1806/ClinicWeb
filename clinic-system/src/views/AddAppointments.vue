@@ -167,6 +167,7 @@ import { getDepartments } from "../services/departmentService";
 import { getDoctorsByWeekday, bookAppointment } from "../services/appointmentService";
 
 import { useToast } from "vue-toastification";
+import { getScheduleByDoctor } from "../services/scheduleService";
 
 export default {
   components: { Sidebar, Navbar },
