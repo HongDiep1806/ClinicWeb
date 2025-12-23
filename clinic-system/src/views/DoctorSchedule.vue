@@ -850,7 +850,15 @@ export default {
                 endTime: "",
                 roomNumber: ""
             },
-            days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            days: [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+            ],
 
             activeDay: "Monday",
 
@@ -859,8 +867,11 @@ export default {
                 Tuesday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
                 Wednesday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
                 Thursday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
-                Friday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" }
+                Friday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
+                Saturday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
+                Sunday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" }
             },
+
 
 
 
