@@ -7,11 +7,7 @@
       <div class="content">
         <!-- BACK -->
         <div class="mb-4">
-          <h6
-            class="fw-bold mb-0 d-flex align-items-center"
-            style="cursor:pointer"
-            @click="goBack"
-          >
+          <h6 class="fw-bold mb-0 d-flex align-items-center" style="cursor:pointer" @click="goBack">
             <i class="ti ti-chevron-left me-1"></i>
             Appointments
           </h6>
@@ -25,43 +21,23 @@
               <label class="form-label">Patient *</label>
 
               <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search or select patient..."
-                  v-model="patientSearch"
-                  @focus="showPatientDropdown = true"
-                  @input="showPatientDropdown = true"
-                />
+                <input type="text" class="form-control" placeholder="Search or select patient..."
+                  v-model="patientSearch" @focus="showPatientDropdown = true" @input="showPatientDropdown = true" />
 
-                <span
-                  class="input-group-text bg-white"
-                  style="cursor:pointer"
-                  @click="togglePatientDropdown"
-                >
+                <span class="input-group-text bg-white" style="cursor:pointer" @click="togglePatientDropdown">
                   <i class="ti ti-chevron-down"></i>
                 </span>
               </div>
 
-              <ul
-                v-if="showPatientDropdown && filteredPatients.length"
-                class="dropdown-menu show w-100 mt-1 shadow-sm"
-                style="max-height:220px; overflow-y:auto;"
-              >
-                <li
-                  v-for="p in filteredPatients"
-                  :key="p.userId"
-                  class="dropdown-item"
-                  @click="selectPatient(p)"
-                >
+              <ul v-if="showPatientDropdown && filteredPatients.length" class="dropdown-menu show w-100 mt-1 shadow-sm"
+                style="max-height:220px; overflow-y:auto;">
+                <li v-for="p in filteredPatients" :key="p.userId" class="dropdown-item" @click="selectPatient(p)">
                   {{ p.fullName }}
                 </li>
               </ul>
 
-              <div
-                v-if="showPatientDropdown && !filteredPatients.length"
-                class="dropdown-menu show w-100 mt-1 p-2 text-muted small"
-              >
+              <div v-if="showPatientDropdown && !filteredPatients.length"
+                class="dropdown-menu show w-100 mt-1 p-2 text-muted small">
                 No patients found
               </div>
             </div>
@@ -71,43 +47,25 @@
               <label class="form-label">Department *</label>
 
               <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search or select department..."
-                  v-model="departmentSearch"
-                  @focus="showDepartmentDropdown = true"
-                  @input="showDepartmentDropdown = true"
-                />
+                <input type="text" class="form-control" placeholder="Search or select department..."
+                  v-model="departmentSearch" @focus="showDepartmentDropdown = true"
+                  @input="showDepartmentDropdown = true" />
 
-                <span
-                  class="input-group-text bg-white"
-                  style="cursor:pointer"
-                  @click="toggleDepartmentDropdown"
-                >
+                <span class="input-group-text bg-white" style="cursor:pointer" @click="toggleDepartmentDropdown">
                   <i class="ti ti-chevron-down"></i>
                 </span>
               </div>
 
-              <ul
-                v-if="showDepartmentDropdown && filteredDepartments.length"
-                class="dropdown-menu show w-100 mt-1 shadow-sm"
-                style="max-height:220px; overflow-y:auto;"
-              >
-                <li
-                  v-for="d in filteredDepartments"
-                  :key="d.departmentId"
-                  class="dropdown-item"
-                  @click="selectDepartment(d)"
-                >
+              <ul v-if="showDepartmentDropdown && filteredDepartments.length"
+                class="dropdown-menu show w-100 mt-1 shadow-sm" style="max-height:220px; overflow-y:auto;">
+                <li v-for="d in filteredDepartments" :key="d.departmentId" class="dropdown-item"
+                  @click="selectDepartment(d)">
                   {{ d.name }}
                 </li>
               </ul>
 
-              <div
-                v-if="showDepartmentDropdown && !filteredDepartments.length"
-                class="dropdown-menu show w-100 mt-1 p-2 text-muted small"
-              >
+              <div v-if="showDepartmentDropdown && !filteredDepartments.length"
+                class="dropdown-menu show w-100 mt-1 p-2 text-muted small">
                 No departments found
               </div>
             </div>
@@ -116,68 +74,66 @@
             <div class="mb-3">
               <label class="form-label">Date *</label>
 
-              <input
-                id="datePicker"
-                type="text"
-                class="form-control datetimepicker"
-                placeholder="DD/MM/YYYY"
-              />
+              <input id="datePicker" type="text" class="form-control datetimepicker" placeholder="DD/MM/YYYY" />
 
               <p v-if="isWeekend" class="text-danger small mt-1">
                 This date falls on a weekend. No doctors available.
               </p>
             </div>
+            <div class="mb-3">
+              <label class="form-label">Work Shift *</label>
+
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" value="Morning" v-model="form.shift"
+                    @change="loadFilteredDoctors" />
+                  <label class="form-check-label">
+                    Morning (08:00 – 12:00)
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" value="Afternoon" v-model="form.shift"
+                    @change="loadFilteredDoctors" />
+                  <label class="form-check-label">
+                    Afternoon (13:00 – 17:00)
+                  </label>
+                </div>
+              </div>
+            </div>
+
 
             <!-- DOCTOR (SEARCH + SELECT + ICON) -->
             <div class="mb-3 position-relative doctor-select">
               <label class="form-label">Doctor *</label>
 
               <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  :disabled="doctors.length === 0"
-                  placeholder="Search or select doctor..."
-                  v-model="doctorSearch"
+                <input type="text" class="form-control" :disabled="doctors.length === 0"
+                  placeholder="Search or select doctor..." v-model="doctorSearch"
                   @focus="doctors.length && (showDoctorDropdown = true)"
-                  @input="doctors.length && (showDoctorDropdown = true)"
-                />
+                  @input="doctors.length && (showDoctorDropdown = true)" />
 
-                <span
-                  class="input-group-text bg-white"
+                <span class="input-group-text bg-white"
                   :style="{ cursor: doctors.length ? 'pointer' : 'not-allowed', opacity: doctors.length ? 1 : 0.6 }"
-                  @click="doctors.length && toggleDoctorDropdown()"
-                >
+                  @click="doctors.length && toggleDoctorDropdown()">
                   <i class="ti ti-chevron-down"></i>
                 </span>
               </div>
 
-              <ul
-                v-if="showDoctorDropdown && filteredDoctors.length"
-                class="dropdown-menu show w-100 mt-1 shadow-sm"
-                style="max-height:220px; overflow-y:auto;"
-              >
-                <li
-                  v-for="d in filteredDoctors"
-                  :key="d.userId"
-                  class="dropdown-item"
-                  @click="selectDoctor(d)"
-                >
+              <ul v-if="showDoctorDropdown && filteredDoctors.length" class="dropdown-menu show w-100 mt-1 shadow-sm"
+                style="max-height:220px; overflow-y:auto;">
+                <li v-for="d in filteredDoctors" :key="d.userId" class="dropdown-item" @click="selectDoctor(d)">
                   {{ d.fullName }}
                 </li>
               </ul>
 
-              <div
-                v-if="showDoctorDropdown && !filteredDoctors.length"
-                class="dropdown-menu show w-100 mt-1 p-2 text-muted small"
-              >
+              <div v-if="showDoctorDropdown && !filteredDoctors.length"
+                class="dropdown-menu show w-100 mt-1 p-2 text-muted small">
                 No doctors found
               </div>
 
-              <p
-                v-if="!isWeekend && doctors.length === 0 && form.date && form.departmentId"
-                class="text-danger small mt-1"
-              >
+              <p v-if="!isWeekend && doctors.length === 0 && form.date && form.departmentId"
+                class="text-danger small mt-1">
                 No doctors available on this weekday.
               </p>
             </div>
@@ -227,9 +183,11 @@ export default {
     const form = ref({
       patientId: "",
       departmentId: "",
-      doctorId: "",
-      date: ""
+      date: "",
+      shift: "",
+      doctorId: ""
     });
+
 
     /* ===== PATIENT AUTOCOMPLETE ===== */
     const patientSearch = ref("");
@@ -311,17 +269,15 @@ export default {
     };
 
     const loadFilteredDoctors = async () => {
-      if (!form.value.departmentId || !form.value.date) return;
+      if (!form.value.departmentId || !form.value.date || !form.value.shift) {
+        doctors.value = [];
+        return;
+      }
 
       const weekday = getWeekday(form.value.date);
       if (weekday === null) {
         doctors.value = [];
         isWeekend.value = true;
-
-        // clear doctor on weekend
-        form.value.doctorId = "";
-        doctorSearch.value = "";
-        showDoctorDropdown.value = false;
         return;
       }
 
@@ -330,16 +286,18 @@ export default {
       const res = await getDoctorsByWeekday(weekday);
       const list = res.data || [];
 
-      doctors.value = list.filter(
-        d => d.departmentId == form.value.departmentId
+      doctors.value = list.filter(d =>
+        d.departmentId == form.value.departmentId &&
+        d.shift === form.value.shift   // 👈 lọc theo ca
       );
 
-      // nếu doctor list thay đổi mà doctor cũ không còn, clear
-      if (form.value.doctorId && !doctors.value.some(x => x.userId === form.value.doctorId)) {
+      // clear doctor nếu không còn hợp lệ
+      if (!doctors.value.some(x => x.userId === form.value.doctorId)) {
         form.value.doctorId = "";
         doctorSearch.value = "";
       }
     };
+
 
     onMounted(async () => {
       patients.value = (await getAllPatients()).data.filter(p => p.status === "Active");
