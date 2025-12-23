@@ -268,35 +268,74 @@ export default {
       return day - 1;
     };
 
-    const loadFilteredDoctors = async () => {
-      if (!form.value.departmentId || !form.value.date || !form.value.shift) {
-        doctors.value = [];
-        return;
-      }
+   const loadFilteredDoctors = async () => {
+  if (!form.value.departmentId || !form.value.date || !form.value.shift) {
+    doctors.value = [];
+    return;
+  }
 
-      const weekday = getWeekday(form.value.date);
-      if (weekday === null) {
-        doctors.value = [];
-        isWeekend.value = true;
-        return;
-      }
+  const weekdayIndex = getWeekday(form.value.date);
+  if (weekdayIndex === null) {
+    doctors.value = [];
+    isWeekend.value = true;
+    return;
+  }
 
-      isWeekend.value = false;
+  isWeekend.value = false;
 
-      const res = await getDoctorsByWeekday(weekday);
-      const list = res.data || [];
+  // 1️⃣ Lấy danh sách doctor theo weekday (API có sẵn)
+  const res = await getDoctorsByWeekday(weekdayIndex);
+  const doctorList = res.data || [];
 
-      doctors.value = list.filter(d =>
-        d.departmentId == form.value.departmentId &&
-        d.shift === form.value.shift   // 👈 lọc theo ca
+  const weekdayNames = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday"
+  ];
+  const dayName = weekdayNames[new Date(form.value.date).getDay() - 1];
+
+  const matchedDoctors = [];
+
+  // 2️⃣ Duyệt từng doctor → check schedule
+  for (const doc of doctorList) {
+    // lọc khoa trước cho nhẹ
+    if (doc.departmentId != form.value.departmentId) continue;
+
+    const schRes = await getScheduleByDoctor(doc.userId);
+    const schedules = schRes.data || [];
+
+    const matched = schedules.find(s => {
+      const start = s.startTime.substring(0, 5);
+      const shift =
+        start === "08:00" ? "Morning" :
+        start === "13:00" ? "Afternoon" :
+        "";
+
+      return (
+        s.dayOfWeek === dayName &&
+        shift === form.value.shift
       );
+    });
 
-      // clear doctor nếu không còn hợp lệ
-      if (!doctors.value.some(x => x.userId === form.value.doctorId)) {
-        form.value.doctorId = "";
-        doctorSearch.value = "";
-      }
-    };
+    if (matched) {
+      matchedDoctors.push(doc);
+    }
+  }
+
+  doctors.value = matchedDoctors;
+
+  // clear doctor nếu doctor cũ không còn hợp lệ
+  if (!doctors.value.some(d => d.userId === form.value.doctorId)) {
+    form.value.doctorId = "";
+    doctorSearch.value = "";
+  }
+};
+
+
 
 
     onMounted(async () => {
