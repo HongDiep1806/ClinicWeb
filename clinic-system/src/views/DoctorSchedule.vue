@@ -760,19 +760,31 @@
                         <p v-else class="text-success">
                             Assigned
                         </p>
-                        <!-- Start Time -->
+                        <!-- Work Shift -->
                         <div class="mb-3">
-                            <label class="form-label">Start Time</label>
-                            <input type="time" class="form-control" v-model="schedules[activeDay].startTime"
-                                :disabled="!schedules[activeDay].isAssigned">
+                            <label class="form-label fw-semibold">Work Shift</label>
+
+                            <div class="d-flex gap-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" value="Morning"
+                                        v-model="schedules[activeDay].shift"
+                                        :disabled="!schedules[activeDay].isAssigned">
+                                    <label class="form-check-label">
+                                        Morning (08:00 - 12:00)
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" value="Afternoon"
+                                        v-model="schedules[activeDay].shift"
+                                        :disabled="!schedules[activeDay].isAssigned">
+                                    <label class="form-check-label">
+                                        Afternoon (13:00 - 17:00)
+                                    </label>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- End Time -->
-                        <div class="mb-3">
-                            <label class="form-label">End Time</label>
-                            <input type="time" class="form-control" v-model="schedules[activeDay].endTime"
-                                :disabled="!schedules[activeDay].isAssigned">
-                        </div>
 
                         <!-- Room -->
                         <div class="mb-3">
@@ -843,12 +855,13 @@ export default {
             activeDay: "Monday",
 
             schedules: {
-                Monday: { scheduleId: null, isAssigned: false, startTime: "07:00", endTime: "19:00", roomNumber: "" },
-                Tuesday: { scheduleId: null, isAssigned: false, startTime: "07:00", endTime: "19:00", roomNumber: "" },
-                Wednesday: { scheduleId: null, isAssigned: false, startTime: "07:00", endTime: "19:00", roomNumber: "" },
-                Thursday: { scheduleId: null, isAssigned: false, startTime: "07:00", endTime: "19:00", roomNumber: "" },
-                Friday: { scheduleId: null, isAssigned: false, startTime: "07:00", endTime: "19:00", roomNumber: "" }
+                Monday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
+                Tuesday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
+                Wednesday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
+                Thursday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" },
+                Friday: { scheduleId: null, isAssigned: false, shift: "Morning", startTime: "", endTime: "", roomNumber: "" }
             },
+
 
 
 
@@ -921,10 +934,12 @@ export default {
                 this.schedules[d] = {
                     scheduleId: null,
                     isAssigned: false,
-                    startTime: "07:00",
-                    endTime: "19:00",
+                    shift: "Morning",   // 👈 BẮT BUỘC
+                    startTime: "",
+                    endTime: "",
                     roomNumber: doc.departmentName
                 };
+
             }
 
             // Gọi API
@@ -932,15 +947,28 @@ export default {
             const list = Array.isArray(res.data) ? res.data : res;
 
             // Gắn dữ liệu có sẵn
+            // list.forEach(s => {
+            //     this.schedules[s.dayOfWeek] = {
+            //         scheduleId: s.scheduleId,
+            //         isAssigned: true,
+            //         startTime: s.startTime.substring(0, 5),
+            //         endTime: s.endTime.substring(0, 5),
+            //         roomNumber: doc.departmentName
+            //     };
+            // });
             list.forEach(s => {
+                const start = s.startTime.substring(0, 5);
+
                 this.schedules[s.dayOfWeek] = {
                     scheduleId: s.scheduleId,
                     isAssigned: true,
-                    startTime: s.startTime.substring(0, 5),
-                    endTime: s.endTime.substring(0, 5),
+                    shift: start === "08:00" ? "Morning" : "Afternoon",
+                    startTime: "",
+                    endTime: "",
                     roomNumber: doc.departmentName
                 };
             });
+
 
             // Mở modal
             const modal = new bootstrap.Modal(document.getElementById("doctor_schedule_modal"));
@@ -1027,11 +1055,13 @@ export default {
 
                     // ✅ Assigned nhưng chưa có schedule → CREATE
                     if (item.isAssigned && !item.scheduleId) {
+                        const time = this.getTimeByShift(item.shift);
+
                         const payload = {
                             doctorId: this.selectedDoctor.userId,
                             dayOfWeek: day,
-                            startTime: item.startTime + ":00",
-                            endTime: item.endTime + ":00",
+                            startTime: time.start + ":00",
+                            endTime: time.end + ":00",
                             roomNumber: item.roomNumber
                         };
 
@@ -1043,6 +1073,7 @@ export default {
                             })
                         );
                     }
+
 
                     // ✅ Assigned + đã có scheduleId → bỏ qua (hoặc update nếu sau này có API update)
                 }
@@ -1062,7 +1093,14 @@ export default {
                 console.error("Save weekly schedule error:", error);
                 toast.error("Failed to save weekly schedule");
             }
-        }
+        },
+        getTimeByShift(shift) {
+            if (shift === "Morning") {
+                return { start: "08:00", end: "12:00" };
+            }
+            return { start: "13:00", end: "17:00" };
+        },
+
 
 
     }
