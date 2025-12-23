@@ -716,7 +716,7 @@
         <!-- Start Edit Modal -->
         <!-- Start Edit Schedule Modal -->
         <div id="doctor_schedule_modal" class="modal fade">
-            <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-md">
                 <div class="modal-content p-3">
 
                     <!-- Header -->
