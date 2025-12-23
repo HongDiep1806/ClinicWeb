@@ -743,7 +743,7 @@
 
 
                     <!-- DAY BUTTONS -->
-                    <div class="d-flex gap-2 mb-3">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
                         <button v-for="d in days" :key="d" class="btn"
                             :class="activeDay === d ? 'btn-primary' : 'btn-light'" @click="activeDay = d">
                             {{ d }}
