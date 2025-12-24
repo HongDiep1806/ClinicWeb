@@ -1051,20 +1051,20 @@ export default {
         ,
         async saveAllSchedules() {
             const toast = useToast();
+            let hasError = false;
 
-            try {
-                for (let day of this.days) {
-                    const item = this.schedules[day];
+            for (let day of this.days) {
+                const item = this.schedules[day];
 
-                    // ❌ Case 1: Unassigned + có schedule → DELETE
+                try {
+                    // ❌ Unassigned + có schedule → DELETE
                     if (!item.isAssigned && item.scheduleId) {
                         await deleteSchedule(item.scheduleId);
                         item.scheduleId = null;
-                        continue;
                     }
 
-                    // ✅ Case 2: Assigned + chưa có schedule → CREATE
-                    if (item.isAssigned && !item.scheduleId) {
+                    // ✅ Assigned + chưa có schedule → CREATE
+                    else if (item.isAssigned && !item.scheduleId) {
                         const time = this.getTimeByShift(item.shift);
 
                         const res = await createSchedule({
@@ -1078,21 +1078,20 @@ export default {
                         if (res?.data?.scheduleId) {
                             item.scheduleId = res.data.scheduleId;
                         }
-
-                        continue;
                     }
-
-                    // ✅ Case 3: Assigned + đã có schedule → KHÔNG LÀM GÌ
-                    // (backend chưa có update API → giữ nguyên)
+                } catch (err) {
+                    console.warn(`Schedule error on ${day}`, err);
+                    hasError = true;
                 }
-
-                toast.success("Weekly schedule saved successfully");
-                this.closeModal();
-
-            } catch (error) {
-                console.error("Save weekly schedule error:", error);
-                toast.error("Failed to save weekly schedule");
             }
+
+            if (hasError) {
+                toast.warning("Schedule saved, but some days may already exist.");
+            } else {
+                toast.success("Weekly schedule saved successfully");
+            }
+
+            this.closeModal();
         }
 
         ,
