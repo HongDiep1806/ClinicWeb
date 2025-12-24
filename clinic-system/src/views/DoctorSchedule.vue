@@ -178,8 +178,13 @@ export default {
       allAppointments: [],
 
       days: [
-        "Monday", "Tuesday", "Wednesday",
-        "Thursday", "Friday", "Saturday", "Sunday"
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
       ],
 
       schedules: {}
@@ -191,6 +196,7 @@ export default {
   },
 
   methods: {
+    /* ================== UTIL ================== */
     createEmptySchedule() {
       return {
         scheduleId: null,
@@ -201,8 +207,35 @@ export default {
       };
     },
 
+    dayToNumber(day) {
+      return {
+        Sunday: 0,
+        Monday: 1,
+        Tuesday: 2,
+        Wednesday: 3,
+        Thursday: 4,
+        Friday: 5,
+        Saturday: 6
+      }[day];
+    },
+
+    getInitial(name) {
+      return name?.charAt(0).toUpperCase() || "?";
+    },
+
+    getColor(name) {
+      const colors = ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e"];
+      let hash = 0;
+      for (let c of name) {
+        hash = c.charCodeAt(0) + ((hash << 5) - hash);
+      }
+      return colors[Math.abs(hash) % colors.length];
+    },
+
+    /* ================== LOAD DATA ================== */
     async loadData() {
       this.loading = true;
+
       const [docRes, deptRes] = await Promise.all([
         getAllDoctors(),
         getDepartments()
@@ -223,17 +256,56 @@ export default {
       this.loading = false;
     },
 
-    getInitial(name) {
-      return name?.charAt(0).toUpperCase() || "?";
+    /* ================== APPOINTMENT LOGIC ================== */
+    hasConfirmedAppointment(doctorId, day) {
+      const targetDay = this.dayToNumber(day);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      return this.allAppointments.some(a => {
+        if (a.doctorId !== doctorId) return false;
+        if (a.status !== "CONFIRMED") return false;
+
+        const apptDate = new Date(a.date);
+        apptDate.setHours(0, 0, 0, 0);
+
+        // ❗ CHỈ LOCK APPOINTMENT TƯƠNG LAI
+        if (apptDate < today) return false;
+
+        return apptDate.getDay() === targetDay;
+      });
     },
 
-    getColor(name) {
-      const colors = ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e"];
-      let hash = 0;
-      for (let c of name) hash = c.charCodeAt(0) + ((hash << 5) - hash);
-      return colors[Math.abs(hash) % colors.length];
+    async cancelPendingAppointments(doctorId, day) {
+      const targetDay = this.dayToNumber(day);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const list = this.allAppointments.filter(a => {
+        if (a.doctorId !== doctorId) return false;
+        if (a.status !== "PENDING") return false;
+
+        const apptDate = new Date(a.date);
+        apptDate.setHours(0, 0, 0, 0);
+
+        // ❗ chỉ huỷ PENDING TƯƠNG LAI
+        if (apptDate < today) return false;
+
+        return apptDate.getDay() === targetDay;
+      });
+
+      for (let a of list) {
+        await updateAppointmentStatus({
+          appointmentId: a.appointmentId,
+          status: "CANCELLED",
+          reason: "Cancelled due to schedule change"
+        });
+      }
     },
 
+    /* ================== MODAL ================== */
     async openScheduleModal(doc) {
       this.selectedDoctor = doc;
       this.activeDay = "Monday";
@@ -241,6 +313,7 @@ export default {
       const apptRes = await getAllAppointments();
       this.allAppointments = apptRes.data ?? apptRes;
 
+      // reset schedules
       this.days.forEach(d => {
         this.schedules[d] = {
           ...this.createEmptySchedule(),
@@ -248,9 +321,13 @@ export default {
         };
       });
 
+      // load existing schedules
       const res = await getScheduleByDoctor(doc.userId);
       (res.data ?? res).forEach(s => {
-        const shift = s.startTime.startsWith("08") ? "Morning" : "Afternoon";
+        const shift = s.startTime.startsWith("08")
+          ? "Morning"
+          : "Afternoon";
+
         this.schedules[s.dayOfWeek] = {
           ...this.schedules[s.dayOfWeek],
           scheduleId: s.scheduleId,
@@ -265,50 +342,33 @@ export default {
       ).show();
     },
 
-    hasConfirmedAppointment(doctorId, day) {
-      return this.allAppointments.some(a =>
-        a.doctorId === doctorId &&
-        a.status === "CONFIRMED" &&
-        new Date(a.date).toLocaleDateString("en-US", { weekday: "long" }) === day
-      );
-    },
-
-    async cancelPendingAppointments(doctorId, day) {
-      const list = this.allAppointments.filter(a =>
-        a.doctorId === doctorId &&
-        a.status === "PENDING" &&
-        new Date(a.date).toLocaleDateString("en-US", { weekday: "long" }) === day
-      );
-
-      for (let a of list) {
-        await updateAppointmentStatus({
-          appointmentId: a.appointmentId,
-          status: "CANCELLED",
-          reason: "Cancelled due to schedule change"
-        });
-      }
-    },
-
+    /* ================== SAVE ================== */
     async saveAllSchedules() {
       const toast = useToast();
 
       for (let day of this.days) {
         const item = this.schedules[day];
+
+        // ❌ Không cho sửa ngày đã lock
         if (item.locked) continue;
 
+        // Huỷ PENDING nếu có
         await this.cancelPendingAppointments(
           this.selectedDoctor.userId,
           day
         );
 
+        // Xoá lịch
         if (!item.isAssigned && item.scheduleId) {
           await deleteSchedule(item.scheduleId);
         }
 
+        // Tạo lịch
         if (item.isAssigned && !item.scheduleId) {
-          const time = item.shift === "Morning"
-            ? { start: "08:00", end: "12:00" }
-            : { start: "13:00", end: "17:00" };
+          const time =
+            item.shift === "Morning"
+              ? { start: "08:00", end: "12:00" }
+              : { start: "13:00", end: "17:00" };
 
           await createSchedule({
             doctorId: this.selectedDoctor.userId,
@@ -321,6 +381,7 @@ export default {
       }
 
       toast.success("Weekly schedule saved successfully");
+
       bootstrap.Modal.getInstance(
         document.getElementById("doctor_schedule_modal")
       ).hide();
@@ -328,4 +389,5 @@ export default {
   }
 };
 </script>
+
 
