@@ -100,7 +100,7 @@
               <input
                 class="form-check-input"
                 type="checkbox"
-                v-model="schedules[activeDay].isAssigned"
+                v-model="schedules[activeDay]?.isAssigned"
               />
               <label class="form-check-label">Assigned</label>
             </div>
@@ -113,7 +113,7 @@
                   type="radio"
                   value="Morning"
                   v-model="schedules[activeDay].shift"
-                  :disabled="!schedules[activeDay].isAssigned"
+                  :disabled="!schedules[activeDay]?.isAssigned"
                 />
                 Morning (08:00 - 12:00)
               </div>
@@ -167,29 +167,38 @@ export default {
   name: "DoctorSchedule",
   components: { Sidebar, Navbar },
 
-  data() {
-    return {
-      doctors: [],
-      departments: [],
-      loading: false,
+ data() {
+  return {
+    doctors: [],
+    departments: [],
+    loading: false,
 
-      selectedDoctor: {},
-      activeDay: "Monday",
-      allAppointments: [],
+    selectedDoctor: {},
+    activeDay: "Monday",
+    allAppointments: [],
 
-      days: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday"
-      ],
+    days: [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
 
-      schedules: {}
-    };
-  },
+    schedules: {
+      Monday: { scheduleId: null, isAssigned: false, shift: "Morning" },
+      Tuesday: { scheduleId: null, isAssigned: false, shift: "Morning" },
+      Wednesday: { scheduleId: null, isAssigned: false, shift: "Morning" },
+      Thursday: { scheduleId: null, isAssigned: false, shift: "Morning" },
+      Friday: { scheduleId: null, isAssigned: false, shift: "Morning" },
+      Saturday: { scheduleId: null, isAssigned: false, shift: "Morning" },
+      Sunday: { scheduleId: null, isAssigned: false, shift: "Morning" }
+    }
+  };
+}
+,
 
   async created() {
     await this.loadData();
