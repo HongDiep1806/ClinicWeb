@@ -969,16 +969,19 @@ export default {
             // });
             list.forEach(s => {
                 const start = s.startTime.substring(0, 5);
+                const shift = start === "08:00" ? "Morning" : "Afternoon";
 
                 this.schedules[s.dayOfWeek] = {
                     scheduleId: s.scheduleId,
                     isAssigned: true,
-                    shift: start === "08:00" ? "Morning" : "Afternoon",
+                    shift,
+                    originalShift: shift,   // ✅ ĐÚNG
                     startTime: "",
                     endTime: "",
                     roomNumber: doc.departmentName
                 };
             });
+
 
 
             // Mở modal
@@ -1079,6 +1082,34 @@ export default {
                             item.scheduleId = res.data.scheduleId;
                         }
                     }
+                    // ✅ Assigned + đã có schedule → CHECK SHIFT CHANGED
+                    else if (item.isAssigned && item.scheduleId) {
+                        const time = this.getTimeByShift(item.shift);
+
+                        // So sánh shift hiện tại với shift ban đầu
+                        const originalShift =
+                            item.originalShift ?? item.shift;
+
+                        if (originalShift !== item.shift) {
+                            // 1️⃣ delete schedule cũ
+                            await deleteSchedule(item.scheduleId);
+
+                            // 2️⃣ create schedule mới
+                            const res = await createSchedule({
+                                doctorId: this.selectedDoctor.userId,
+                                dayOfWeek: day,
+                                startTime: time.start + ":00",
+                                endTime: time.end + ":00",
+                                roomNumber: item.roomNumber
+                            });
+
+                            if (res?.data?.scheduleId) {
+                                item.scheduleId = res.data.scheduleId;
+                                item.originalShift = item.shift; // cập nhật lại
+                            }
+                        }
+                    }
+
                 } catch (err) {
                     console.warn(`Schedule error on ${day}`, err);
                     hasError = true;
