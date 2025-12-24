@@ -100,7 +100,7 @@
               <input
                 class="form-check-input"
                 type="checkbox"
-                v-model="schedules[activeDay]?.isAssigned"
+                v-model="schedules[activeDay].isAssigned"
               />
               <label class="form-check-label">Assigned</label>
             </div>
@@ -113,7 +113,7 @@
                   type="radio"
                   value="Morning"
                   v-model="schedules[activeDay].shift"
-                  :disabled="!schedules[activeDay]?.isAssigned"
+                  :disabled="!schedules[activeDay].isAssigned"
                 />
                 Morning (08:00 - 12:00)
               </div>
@@ -151,247 +151,290 @@ import Navbar from "../components/Navbar.vue";
 import { getAllDoctors } from "../services/doctorService";
 import { getDepartments } from "../services/departmentService";
 import {
-  createSchedule,
-  getScheduleByDoctor,
-  deleteSchedule
+    createSchedule,
+    getScheduleByDoctor,
+    deleteSchedule
 } from "../services/scheduleService";
 
 import {
-  getAllAppointments,
-  updateAppointmentStatus
+    getAllAppointments,
+    updateAppointmentStatus
 } from "../services/appointmentService";
 
 import { useToast } from "vue-toastification";
 
 export default {
-  name: "DoctorSchedule",
-  components: { Sidebar, Navbar },
+    name: "DoctorSchedule",
+    components: { Sidebar, Navbar },
 
- data() {
-  return {
-    doctors: [],
-    departments: [],
-    loading: false,
+    data() {
+        return {
+            doctors: [],
+            departments: [],
+            loading: false,
 
-    selectedDoctor: {},
-    activeDay: "Monday",
-    allAppointments: [],
+            selectedDoctor: {},
+            activeDay: "Monday",
+            allAppointments: [],
 
-    days: [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday"
-    ],
+            days: [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+            ],
 
-    schedules: {
-      Monday: { scheduleId: null, isAssigned: false, shift: "Morning" },
-      Tuesday: { scheduleId: null, isAssigned: false, shift: "Morning" },
-      Wednesday: { scheduleId: null, isAssigned: false, shift: "Morning" },
-      Thursday: { scheduleId: null, isAssigned: false, shift: "Morning" },
-      Friday: { scheduleId: null, isAssigned: false, shift: "Morning" },
-      Saturday: { scheduleId: null, isAssigned: false, shift: "Morning" },
-      Sunday: { scheduleId: null, isAssigned: false, shift: "Morning" }
-    }
-  };
-}
-,
-
-  async created() {
-    await this.loadData();
-  },
-
-  methods: {
-    /* ===== UTIL ===== */
-    createEmptySchedule() {
-      return {
-        scheduleId: null,
-        isAssigned: false,
-        shift: "Morning"
-      };
-    },
-
-    dayToNumber(day) {
-      return {
-        Sunday: 0,
-        Monday: 1,
-        Tuesday: 2,
-        Wednesday: 3,
-        Thursday: 4,
-        Friday: 5,
-        Saturday: 6
-      }[day];
-    },
-
-    getInitial(name) {
-      return name?.charAt(0).toUpperCase() || "?";
-    },
-
-    getColor(name) {
-      const colors = ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e"];
-      let hash = 0;
-      for (let c of name) hash = c.charCodeAt(0) + ((hash << 5) - hash);
-      return colors[Math.abs(hash) % colors.length];
-    },
-
-    /* ===== LOAD ===== */
-    async loadData() {
-      this.loading = true;
-
-      const [docRes, deptRes] = await Promise.all([
-        getAllDoctors(),
-        getDepartments()
-      ]);
-
-      const deptMap = {};
-      (deptRes.data ?? deptRes).forEach(d => {
-        deptMap[d.departmentId] = d.name;
-      });
-
-      this.doctors = (docRes.data ?? docRes)
-        .filter(d => d.status === "Active")
-        .map(d => ({
-          ...d,
-          departmentName: deptMap[d.departmentId] || "No Department"
-        }));
-
-      this.loading = false;
-    },
-
-    /* ===== APPOINTMENT CHECK ===== */
-    hasConfirmedFutureAppointmentForDay(doctorId, day) {
-      if (!doctorId) return false;
-
-      const targetDay = this.dayToNumber(day);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      return this.allAppointments.some(a => {
-        if (a.doctorId !== doctorId) return false;
-        if (a.status !== "CONFIRMED" && a.status !== "Confirmed") return false;
-
-        const raw = a.date.split(" ")[0]; // MM/DD/YYYY
-        const [month, date, year] = raw.split("/").map(Number);
-        const apptDate = new Date(year, month - 1, date);
-        apptDate.setHours(0, 0, 0, 0);
-
-        return apptDate >= today && apptDate.getDay() === targetDay;
-      });
-    },
-
-    async cancelPendingAppointments(doctorId, day) {
-      const targetDay = this.dayToNumber(day);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const list = this.allAppointments.filter(a => {
-        if (a.doctorId !== doctorId) return false;
-        if (a.status !== "PENDING") return false;
-
-        const raw = a.date.split(" ")[0];
-        const [month, date, year] = raw.split("/").map(Number);
-        const apptDate = new Date(year, month - 1, date);
-        apptDate.setHours(0, 0, 0, 0);
-
-        return apptDate >= today && apptDate.getDay() === targetDay;
-      });
-
-      for (let a of list) {
-        await updateAppointmentStatus({
-          appointmentId: a.appointmentId,
-          status: "CANCELLED",
-          reason: "Cancelled due to schedule change"
-        });
-      }
-    },
-
-    /* ===== MODAL ===== */
-    async openScheduleModal(doc) {
-      this.selectedDoctor = doc;
-      this.activeDay = "Monday";
-
-      const apptRes = await getAllAppointments();
-      this.allAppointments = apptRes.data ?? apptRes;
-
-      this.days.forEach(d => {
-        this.schedules[d] = this.createEmptySchedule();
-      });
-
-      const res = await getScheduleByDoctor(doc.userId);
-      (res.data ?? res).forEach(s => {
-        this.schedules[s.dayOfWeek] = {
-          scheduleId: s.scheduleId,
-          isAssigned: true,
-          shift: s.startTime.startsWith("08") ? "Morning" : "Afternoon"
+            schedules: {
+                Monday: { locked: false, isAssigned: false, shift: "Morning" },
+                Tuesday: { locked: false, isAssigned: false, shift: "Morning" },
+                Wednesday: { locked: false, isAssigned: false, shift: "Morning" },
+                Thursday: { locked: false, isAssigned: false, shift: "Morning" },
+                Friday: { locked: false, isAssigned: false, shift: "Morning" },
+                Saturday: { locked: false, isAssigned: false, shift: "Morning" },
+                Sunday: { locked: false, isAssigned: false, shift: "Morning" }
+            }
         };
-      });
+    }
+    ,
 
-      new bootstrap.Modal(
-        document.getElementById("doctor_schedule_modal")
-      ).show();
+    async created() {
+        await this.loadData();
     },
 
-    /* ===== SAVE ===== */
-    async saveAllSchedules() {
-      const toast = useToast();
-      let hasError = false;
+    methods: {
+        /* ================== UTIL ================== */
+        createEmptySchedule() {
+            return {
+                scheduleId: null,
+                isAssigned: false,
+                shift: "Morning",
+                originalShift: null,
+                locked: false
+            };
+        },
 
-      for (let day of this.days) {
-        const item = this.schedules[day];
+        dayToNumber(day) {
+            return {
+                Sunday: 0,
+                Monday: 1,
+                Tuesday: 2,
+                Wednesday: 3,
+                Thursday: 4,
+                Friday: 5,
+                Saturday: 6
+            }[day];
+        },
 
-        if (!item.isAssigned) {
-          const hasConfirmed =
-            this.hasConfirmedFutureAppointmentForDay(
-              this.selectedDoctor.userId,
-              day
-            );
+        getInitial(name) {
+            return name?.charAt(0).toUpperCase() || "?";
+        },
 
-          if (hasConfirmed) {
-            toast.error(
-              `Cannot turn off ${day} because there are confirmed appointments`
-            );
-            hasError = true;
-            continue;
-          }
+        getColor(name) {
+            const colors = ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e"];
+            let hash = 0;
+            for (let c of name) {
+                hash = c.charCodeAt(0) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length];
+        },
+
+        /* ================== LOAD DATA ================== */
+        async loadData() {
+            this.loading = true;
+
+            const [docRes, deptRes] = await Promise.all([
+                getAllDoctors(),
+                getDepartments()
+            ]);
+
+            const deptMap = {};
+            (deptRes.data ?? deptRes).forEach(d => {
+                deptMap[d.departmentId] = d.name;
+            });
+
+            this.doctors = (docRes.data ?? docRes)
+                .filter(d => d.status === "Active")
+                .map(d => ({
+                    ...d,
+                    departmentName: deptMap[d.departmentId] || "No Department"
+                }));
+
+            this.loading = false;
+        },
+
+        /* ================== APPOINTMENT LOGIC ================== */
+        hasConfirmedAppointment(doctorId, day) {
+            const targetDay = this.dayToNumber(day);
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            return this.allAppointments.some(a => {
+                if (a.doctorId !== doctorId) return false;
+                if (a.status !== "CONFIRMED") return false;
+
+                // ✅ Parse date AN TOÀN
+                const raw = a.date.split(" ")[0]; // 1/3/2026
+                const [month, date, year] = raw.split("/").map(Number);
+
+                const apptDate = new Date(year, month - 1, date);
+                apptDate.setHours(0, 0, 0, 0);
+
+                // ❗ chỉ lock tương lai
+                if (apptDate < today) return false;
+
+                return apptDate.getDay() === targetDay;
+            });
         }
+        ,
 
-        await this.cancelPendingAppointments(
-          this.selectedDoctor.userId,
-          day
-        );
+        async cancelPendingAppointments(doctorId, day) {
+            const targetDay = this.dayToNumber(day);
 
-        if (!item.isAssigned && item.scheduleId) {
-          await deleteSchedule(item.scheduleId);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const list = this.allAppointments.filter(a => {
+                if (a.doctorId !== doctorId) return false;
+                if (a.status !== "PENDING") return false;
+
+                const raw = a.date.split(" ")[0];
+                const [month, date, year] = raw.split("/").map(Number);
+                const apptDate = new Date(year, month - 1, date);
+                apptDate.setHours(0, 0, 0, 0);
+
+                if (apptDate < today) return false;
+
+                return apptDate.getDay() === targetDay;
+            });
+
+            for (let a of list) {
+                await updateAppointmentStatus({
+                    appointmentId: a.appointmentId,
+                    status: "CANCELLED",
+                    reason: "Cancelled due to schedule change"
+                });
+            }
         }
+        ,
 
-        if (item.isAssigned && !item.scheduleId) {
-          const time =
-            item.shift === "Morning"
-              ? { start: "08:00", end: "12:00" }
-              : { start: "13:00", end: "17:00" };
+        /* ================== MODAL ================== */
+        async openScheduleModal(doc) {
+            this.selectedDoctor = doc;
+            this.activeDay = "Monday";
 
-          await createSchedule({
-            doctorId: this.selectedDoctor.userId,
-            dayOfWeek: day,
-            startTime: time.start + ":00",
-            endTime: time.end + ":00",
-            roomNumber: this.selectedDoctor.departmentName
-          });
+            const apptRes = await getAllAppointments();
+            this.allAppointments = apptRes.data ?? apptRes;
+
+            // reset schedules
+            this.days.forEach(d => {
+                this.schedules[d] = {
+                    ...this.createEmptySchedule(),
+                    locked: this.hasConfirmedAppointment(doc.userId, d)
+                };
+            });
+
+            // load existing schedules
+            const res = await getScheduleByDoctor(doc.userId);
+            (res.data ?? res).forEach(s => {
+                const shift = s.startTime.startsWith("08")
+                    ? "Morning"
+                    : "Afternoon";
+
+                this.schedules[s.dayOfWeek] = {
+                    ...this.schedules[s.dayOfWeek],
+                    scheduleId: s.scheduleId,
+                    isAssigned: true,
+                    shift,
+                    originalShift: shift
+                };
+            });
+
+            new bootstrap.Modal(
+                document.getElementById("doctor_schedule_modal")
+            ).show();
+        },
+        hasConfirmedFutureAppointmentForDay(doctorId, day) {
+            const targetDay = this.dayToNumber(day);
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            return this.allAppointments.some(a => {
+                if (a.doctorId !== doctorId) return false;
+                if (a.status !== "Confirmed" && a.status !== "CONFIRMED") return false;
+
+                const raw = a.date.split(" ")[0]; // MM/DD/YYYY
+                const [month, date, year] = raw.split("/").map(Number);
+                const apptDate = new Date(year, month - 1, date);
+                apptDate.setHours(0, 0, 0, 0);
+
+                return apptDate >= today && apptDate.getDay() === targetDay;
+            });
         }
-      }
+        ,
 
-      if (!hasError) {
-        toast.success("Weekly schedule saved successfully");
-      }
+        /* ================== SAVE ================== */
+        async saveAllSchedules() {
+            const toast = useToast();
 
-      bootstrap.Modal.getInstance(
-        document.getElementById("doctor_schedule_modal")
-      ).hide();
+            for (let day of this.days) {
+                const item = this.schedules[day];
+
+                // ❌ nếu tắt Assigned mà còn CONFIRMED → CHẶN
+                if (!item.isAssigned) {
+                    const hasConfirmed =
+                        this.hasConfirmedFutureAppointmentForDay(
+                            this.selectedDoctor.userId,
+                            day
+                        );
+
+                    if (hasConfirmed) {
+                        toast.error(
+                            `Cannot turn off ${day} because there are confirmed appointments`
+                        );
+                        continue;
+                    }
+                }
+
+                // 🔄 huỷ PENDING
+                await this.cancelPendingAppointments(
+                    this.selectedDoctor.userId,
+                    day
+                );
+
+                // xoá schedule
+                if (!item.isAssigned && item.scheduleId) {
+                    await deleteSchedule(item.scheduleId);
+                }
+
+                // tạo schedule
+                if (item.isAssigned && !item.scheduleId) {
+                    const time =
+                        item.shift === "Morning"
+                            ? { start: "08:00", end: "12:00" }
+                            : { start: "13:00", end: "17:00" };
+
+                    await createSchedule({
+                        doctorId: this.selectedDoctor.userId,
+                        dayOfWeek: day,
+                        startTime: time.start + ":00",
+                        endTime: time.end + ":00",
+                        roomNumber: this.selectedDoctor.departmentName
+                    });
+                }
+            }
+
+
+            toast.success("Weekly schedule saved successfully");
+
+            bootstrap.Modal.getInstance(
+                document.getElementById("doctor_schedule_modal")
+            ).hide();
+        }
     }
-  }
 };
 </script>
-
