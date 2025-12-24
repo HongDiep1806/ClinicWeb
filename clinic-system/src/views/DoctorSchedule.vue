@@ -338,11 +338,17 @@ export default {
         },
         hasConfirmedFutureAppointmentForDay(doctorId, day) {
             const targetDay = this.dayToNumber(day);
+            console.log("---- CHECK APPOINTMENT ----");
+            console.log("doctorId:", doctorId);
+            console.log("day:", day, "targetDay:", targetDay);
+            console.log("allAppointments:", this.allAppointments);
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
             return this.allAppointments.some(a => {
+                console.log("checking appointment:", a);
+
                 if (a.doctorId !== doctorId) return false;
                 if (a.status !== "Confirmed" && a.status !== "CONFIRMED") return false;
 
@@ -350,6 +356,8 @@ export default {
                 const [month, date, year] = raw.split("/").map(Number);
                 const apptDate = new Date(year, month - 1, date);
                 apptDate.setHours(0, 0, 0, 0);
+                console.log("apptDate:", apptDate, "getDay:", apptDate.getDay());
+
 
                 return apptDate >= today && apptDate.getDay() === targetDay;
             });
