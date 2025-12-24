@@ -258,15 +258,20 @@ export default {
                 if (a.doctorId !== doctorId) return false;
                 if (a.status !== "CONFIRMED") return false;
 
-                const apptDate = new Date(a.date);
+                // ✅ Parse date AN TOÀN
+                const raw = a.date.split(" ")[0]; // 1/3/2026
+                const [month, date, year] = raw.split("/").map(Number);
+
+                const apptDate = new Date(year, month - 1, date);
                 apptDate.setHours(0, 0, 0, 0);
 
-                // ❗ CHỈ LOCK APPOINTMENT TƯƠNG LAI
+                // ❗ chỉ lock tương lai
                 if (apptDate < today) return false;
 
                 return apptDate.getDay() === targetDay;
             });
-        },
+        }
+        ,
 
         async cancelPendingAppointments(doctorId, day) {
             const targetDay = this.dayToNumber(day);
@@ -278,10 +283,11 @@ export default {
                 if (a.doctorId !== doctorId) return false;
                 if (a.status !== "PENDING") return false;
 
-                const apptDate = new Date(a.date);
+                const raw = a.date.split(" ")[0];
+                const [month, date, year] = raw.split("/").map(Number);
+                const apptDate = new Date(year, month - 1, date);
                 apptDate.setHours(0, 0, 0, 0);
 
-                // ❗ chỉ huỷ PENDING TƯƠNG LAI
                 if (apptDate < today) return false;
 
                 return apptDate.getDay() === targetDay;
@@ -294,7 +300,8 @@ export default {
                     reason: "Cancelled due to schedule change"
                 });
             }
-        },
+        }
+        ,
 
         /* ================== MODAL ================== */
         async openScheduleModal(doc) {
