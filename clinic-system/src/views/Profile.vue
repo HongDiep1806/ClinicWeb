@@ -100,43 +100,37 @@
 
               <form @submit.prevent="changePassword">
                 <div class="row mt-3">
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">Current Password</label>
 
-                    <div class="input-group">
-                      <input :type="showPassword.current ? 'text' : 'password'" v-model="password.current"
-                        class="form-control" />
-                      <span class="input-group-text password-eye" @click="showPassword.current = !showPassword.current">
-                        <i :class="showPassword.current ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
-                      </span>
-                    </div>
-                  </div>
 
 
                   <div class="col-md-4 mb-3">
                     <label class="form-label">New Password</label>
 
-                    <div class="input-group">
+                    <div class="input-group password-group">
                       <input :type="showPassword.new ? 'text' : 'password'" v-model="password.new"
                         class="form-control" />
+
                       <span class="input-group-text password-eye" @click="showPassword.new = !showPassword.new">
-                        <i :class="showPassword.new ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                        <i class="ti ti-eye"></i>
                       </span>
                     </div>
                   </div>
+
 
 
                   <div class="col-md-4 mb-3">
                     <label class="form-label">Confirm Password</label>
 
-                    <div class="input-group">
+                    <div class="input-group password-group">
                       <input :type="showPassword.confirm ? 'text' : 'password'" v-model="password.confirm"
                         class="form-control" />
+
                       <span class="input-group-text password-eye" @click="showPassword.confirm = !showPassword.confirm">
-                        <i :class="showPassword.confirm ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                        <i class="ti ti-eye"></i>
                       </span>
                     </div>
                   </div>
+
 
                 </div>
 
@@ -378,5 +372,31 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ❌ TẮT ICON MẮT MẶC ĐỊNH CỦA TRÌNH DUYỆT */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none;
+}
+
+/* ICON MẮT CUSTOM */
+.password-eye {
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.password-eye i {
+  font-size: 18px;
+  color: #2c3e50;
+  /* navy */
+}
+
+.password-eye:hover i {
+  color: #0d6efd;
 }
 </style>
