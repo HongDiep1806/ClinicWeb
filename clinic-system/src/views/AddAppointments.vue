@@ -186,6 +186,8 @@ import Navbar from "../components/Navbar.vue";
 import { getAllPatients } from "../services/userService";
 import { getDepartments } from "../services/departmentService";
 import { getDoctorsByWeekday, bookAppointment } from "../services/appointmentService";
+import { getAllAppointments } from "../services/appointmentService";
+
 
 import { useToast } from "vue-toastification";
 import { getScheduleByDoctor } from "../services/scheduleService";
@@ -210,6 +212,9 @@ export default {
       doctorId: ""
     });
     const DAILY_KPI = 200;
+    // lấy toàn bộ appointment 1 lần (cache)
+    const allAppointments = ref([]);
+
 
 
 
@@ -399,21 +404,41 @@ export default {
 
         if (!matchedSchedule) continue;
 
-        // 2️⃣ MOCK workload (vì không sửa backend)
-        // giáo viên CHO PHÉP giả lập
-        const appointmentCount =
-          matchedSchedule.currentAppointments ??
-          Math.floor(Math.random() * 20); // giả lập 0–19
+        // trong vòng for doctor
+        const appointmentCount = allAppointments.value.filter(a => {
+          if (a.doctorId !== doc.userId) return false;
+          if (a.status === "Cancelled") return false;
+
+          // cùng ngày
+          if (a.date !== form.value.date) return false;
+
+          // cùng ca
+          const hour = Number(a.time?.substring(0, 2) || 0);
+          const apptShift = hour < 12 ? "Morning" : "Afternoon";
+
+          return apptShift === form.value.shift;
+        }).length;
 
         const remainingSlots = DAILY_KPI - appointmentCount;
 
-        // 3️⃣ nếu muốn ẩn doctor full KPI
+        // ẩn doctor full KPI
         if (remainingSlots <= 0) continue;
 
         matchedDoctors.push({
           ...doc,
           remainingSlots
         });
+
+
+        // const remainingSlots = DAILY_KPI - appointmentCount;
+
+        // // 3️⃣ nếu muốn ẩn doctor full KPI
+        // if (remainingSlots <= 0) continue;
+
+        // matchedDoctors.push({
+        //   ...doc,
+        //   remainingSlots
+        // });
       }
 
       // 4️⃣ SORT giảm dần theo remaining slots
@@ -434,6 +459,8 @@ export default {
 
 
     onMounted(async () => {
+      allAppointments.value = (await getAllAppointments()).data || [];
+
       patients.value = (await getAllPatients()).data.filter(p => p.status === "Active");
 
       const allDepartments = await getDepartments();
