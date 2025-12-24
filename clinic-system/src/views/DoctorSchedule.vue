@@ -1,146 +1,125 @@
 <template>
-  <div class="main-wrapper">
-    <Navbar />
-    <Sidebar />
+    <div class="main-wrapper">
+        <Navbar />
+        <Sidebar />
 
-    <div class="page-wrapper">
-      <div class="content">
+        <div class="page-wrapper">
+            <div class="content">
 
-        <!-- HEADER -->
-        <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
-          <h4 class="fw-bold mb-0">
-            Doctor Schedule
-            <span class="badge badge-soft-primary fs-13 ms-2">
-              Total Doctors: {{ doctors.length }}
-            </span>
-          </h4>
+                <!-- HEADER -->
+                <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+                    <h4 class="fw-bold mb-0">
+                        Doctor Schedule
+                        <span class="badge badge-soft-primary fs-13 ms-2">
+                            Total Doctors: {{ doctors.length }}
+                        </span>
+                    </h4>
+                </div>
+
+                <!-- TABLE -->
+                <div class="table-responsive">
+                    <table class="table table-nowrap">
+                        <thead>
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Department</th>
+                                <th>Phone</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr v-if="loading">
+                                <td colspan="4" class="text-center py-4">Loading...</td>
+                            </tr>
+
+                            <tr v-for="doc in doctors" :key="doc.userId">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar rounded-circle text-white fw-semibold me-2 d-flex align-items-center justify-content-center"
+                                            :style="{ backgroundColor: getColor(doc.fullName), width: '45px', height: '45px' }">
+                                            {{ getInitial(doc.fullName) }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ doc.fullName }}</div>
+                                            <small class="text-muted">{{ doc.departmentName }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>{{ doc.departmentName }}</td>
+                                <td>{{ doc.phone || "N/A" }}</td>
+
+                                <td>
+                                    <a href="javascript:void(0)" @click="openScheduleModal(doc)">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
         </div>
 
-        <!-- TABLE -->
-        <div class="table-responsive">
-          <table class="table table-nowrap">
-            <thead>
-              <tr>
-                <th>Doctor</th>
-                <th>Department</th>
-                <th>Phone</th>
-                <th></th>
-              </tr>
-            </thead>
+        <!-- MODAL -->
+        <div id="doctor_schedule_modal" class="modal fade">
+            <div class="modal-dialog modal-dialog-centered modal-md modal-dialog-scrollable">
+                <div class="modal-content p-3">
 
-            <tbody>
-              <tr v-if="loading">
-                <td colspan="4" class="text-center py-4">Loading...</td>
-              </tr>
-
-              <tr v-for="doc in doctors" :key="doc.userId">
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div
-                      class="avatar rounded-circle text-white fw-semibold me-2 d-flex align-items-center justify-content-center"
-                      :style="{ backgroundColor: getColor(doc.fullName), width: '45px', height: '45px' }"
-                    >
-                      {{ getInitial(doc.fullName) }}
+                    <div class="modal-header">
+                        <h5>Edit Doctor Schedule</h5>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div>
-                      <div class="fw-semibold">{{ doc.fullName }}</div>
-                      <small class="text-muted">{{ doc.departmentName }}</small>
+
+                    <div class="modal-body">
+                        <input class="form-control mb-3" :value="selectedDoctor.fullName" disabled />
+
+                        <!-- DAY BUTTONS -->
+                        <div class="d-flex gap-2 flex-wrap mb-3">
+                            <button v-for="d in days" :key="d" class="btn"
+                                :class="activeDay === d ? 'btn-primary' : 'btn-light'" @click="activeDay = d">
+                                {{ d }}
+                            </button>
+                        </div>
+
+                        <p v-if="hasConfirmedFutureAppointmentForDay(selectedDoctor.userId, activeDay)"
+                            class="text-danger fw-semibold">
+                            ⚠ This day has confirmed appointments. You cannot turn off the schedule.
+                        </p>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" v-model="schedules[activeDay].isAssigned" />
+                            <label class="form-check-label">Assigned</label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-semibold">Work Shift</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" value="Morning"
+                                    v-model="schedules[activeDay].shift" :disabled="!schedules[activeDay].isAssigned" />
+                                Morning (08:00 - 12:00)
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" value="Afternoon"
+                                    v-model="schedules[activeDay].shift" :disabled="!schedules[activeDay].isAssigned" />
+                                Afternoon (13:00 - 17:00)
+                            </div>
+                        </div>
                     </div>
-                  </div>
-                </td>
 
-                <td>{{ doc.departmentName }}</td>
-                <td>{{ doc.phone || "N/A" }}</td>
+                    <div class="modal-footer">
+                        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary" @click="saveAllSchedules">
+                            Save Weekly Schedule
+                        </button>
+                    </div>
 
-                <td>
-                  <a href="javascript:void(0)" @click="openScheduleModal(doc)">
-                    <i class="ti ti-eye"></i>
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+            </div>
         </div>
-
-      </div>
     </div>
-
-    <!-- MODAL -->
-    <div id="doctor_schedule_modal" class="modal fade">
-      <div class="modal-dialog modal-dialog-centered modal-md modal-dialog-scrollable">
-        <div class="modal-content p-3">
-
-          <div class="modal-header">
-            <h5>Edit Doctor Schedule</h5>
-            <button class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-
-          <div class="modal-body">
-            <input class="form-control mb-3" :value="selectedDoctor.fullName" disabled />
-
-            <!-- DAY BUTTONS -->
-            <div class="d-flex gap-2 flex-wrap mb-3">
-              <button
-                v-for="d in days"
-                :key="d"
-                class="btn"
-                :class="activeDay === d ? 'btn-primary' : 'btn-light'"
-                @click="activeDay = d"
-              >
-                {{ d }}
-              </button>
-            </div>
-
-            <p v-if="hasConfirmedFutureAppointmentForDay(selectedDoctor.userId, activeDay)"
-               class="text-danger fw-semibold">
-              ⚠ This day has confirmed appointments. You cannot turn off the schedule.
-            </p>
-
-            <div class="form-check form-switch mb-3">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                v-model="schedules[activeDay].isAssigned"
-              />
-              <label class="form-check-label">Assigned</label>
-            </div>
-
-            <div class="mb-3">
-              <label class="fw-semibold">Work Shift</label>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  value="Morning"
-                  v-model="schedules[activeDay].shift"
-                  :disabled="!schedules[activeDay].isAssigned"
-                />
-                Morning (08:00 - 12:00)
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  value="Afternoon"
-                  v-model="schedules[activeDay].shift"
-                  :disabled="!schedules[activeDay].isAssigned"
-                />
-                Afternoon (13:00 - 17:00)
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-            <button class="btn btn-primary" @click="saveAllSchedules">
-              Save Weekly Schedule
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
 </template>
 
 
@@ -383,6 +362,10 @@ export default {
 
             for (let day of this.days) {
                 const item = this.schedules[day];
+                console.log("===== SAVE CHECK =====");
+                console.log("Day:", day);
+                console.log("isAssigned:", item.isAssigned);
+                console.log("doctorId:", this.selectedDoctor.userId);
 
                 // ❌ nếu tắt Assigned mà còn CONFIRMED → CHẶN
                 if (!item.isAssigned) {
@@ -391,6 +374,8 @@ export default {
                             this.selectedDoctor.userId,
                             day
                         );
+                    console.log("hasConfirmedFutureAppointment:", hasConfirmed);
+
 
                     if (hasConfirmed) {
                         toast.error(
@@ -398,6 +383,7 @@ export default {
                         );
                         continue;
                     }
+
                 }
 
                 // 🔄 huỷ PENDING
