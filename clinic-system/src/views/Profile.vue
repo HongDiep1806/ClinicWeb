@@ -105,7 +105,7 @@
 
                     <div class="input-group password-group">
                       <input :type="showPassword.current ? 'text' : 'password'" v-model="password.current"
-                        class="form-control" />
+                        class="form-control" autocomplete="current-password" />
 
                       <span class="input-group-text password-eye" @click="showPassword.current = !showPassword.current">
                         <i :class="showPassword.current ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
@@ -120,8 +120,8 @@
                     <label class="form-label">New Password</label>
 
                     <div class="input-group password-group">
-                      <input :type="showPassword.new ? 'text' : 'password'" v-model="password.new"
-                        class="form-control" />
+                      <input :type="showPassword.new ? 'text' : 'password'" v-model="password.new" class="form-control"
+                        autocomplete="new-password" />
 
                       <span class="input-group-text password-eye" @click="showPassword.new = !showPassword.new">
                         <i :class="showPassword.new ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
@@ -136,7 +136,7 @@
 
                     <div class="input-group password-group">
                       <input :type="showPassword.confirm ? 'text' : 'password'" v-model="password.confirm"
-                        class="form-control" />
+                        class="form-control" autocomplete="new-password" />
 
                       <span class="input-group-text password-eye" @click="showPassword.confirm = !showPassword.confirm">
                         <i :class="showPassword.confirm ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
