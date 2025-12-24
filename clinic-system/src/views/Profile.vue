@@ -103,10 +103,15 @@
                   <div class="col-md-4 mb-3">
                     <label class="form-label">Current Password</label>
 
-                    <input type="password" v-model="password.current" class="form-control"
-                      autocomplete="current-password" />
-
+                    <div class="password-wrapper">
+                      <input :type="show.current ? 'text' : 'password'" v-model="password.current" class="form-control"
+                        autocomplete="current-password" />
+                      <span class="eye-icon" @click="show.current = !show.current">
+                        <i :class="show.current ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                      </span>
+                    </div>
                   </div>
+
 
 
 
@@ -114,19 +119,30 @@
                   <div class="col-md-4 mb-3">
                     <label class="form-label">New Password</label>
 
-                    <input type="password" v-model="password.new" class="form-control" autocomplete="new-password" />
-
+                    <div class="password-wrapper">
+                      <input :type="show.new ? 'text' : 'password'" v-model="password.new" class="form-control"
+                        autocomplete="new-password" />
+                      <span class="eye-icon" @click="show.new = !show.new">
+                        <i :class="show.new ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                      </span>
+                    </div>
                   </div>
+
 
 
 
                   <div class="col-md-4 mb-3">
                     <label class="form-label">Confirm Password</label>
 
-                    <input type="password" v-model="password.confirm" class="form-control"
-                      autocomplete="new-password" />
-
+                    <div class="password-wrapper">
+                      <input :type="show.confirm ? 'text' : 'password'" v-model="password.confirm" class="form-control"
+                        autocomplete="new-password" />
+                      <span class="eye-icon" @click="show.confirm = !show.confirm">
+                        <i :class="show.confirm ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                      </span>
+                    </div>
                   </div>
+
 
 
                 </div>
@@ -167,7 +183,7 @@ export default {
         gender: "",
         address: "",
       },
-      
+
       dobModel: null,
 
       provinces: vnAddress,
@@ -175,11 +191,16 @@ export default {
       selectedWard: "",
       wards: [],
 
+      show: {
+        current: false,
+        new: false,
+        confirm: false,
+      },
       password: {
         current: "",
         new: "",
         confirm: "",
-      },
+      }
     };
   },
 
@@ -364,4 +385,29 @@ export default {
   align-items: center;
   justify-content: center;
 }
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 42px; /* chừa chỗ cho icon */
+}
+
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #2c3e50;
+}
+
+.eye-icon:hover {
+  color: #0d6efd;
+}
+
+.eye-icon i {
+  font-size: 18px;
+}
+
 </style>
