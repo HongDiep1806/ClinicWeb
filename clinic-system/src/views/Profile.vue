@@ -167,13 +167,7 @@ export default {
         gender: "",
         address: "",
       },
-      showPassword: {
-        current: false,
-        new: false,
-        confirm: false,
-      },
-
-
+      
       dobModel: null,
 
       provinces: vnAddress,
@@ -369,53 +363,5 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* ❌ TẮT ICON MẮT MẶC ĐỊNH CỦA TRÌNH DUYỆT */
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
-  display: none;
-}
-
-input[type="password"]::-webkit-textfield-decoration-container {
-  display: none;
-}
-
-/* ICON MẮT CUSTOM */
-.password-eye {
-  cursor: pointer;
-  background-color: #fff;
-}
-
-.password-eye i {
-  font-size: 18px;
-  color: #2c3e50;
-  /* navy */
-}
-
-.password-eye:hover i {
-  color: #0d6efd;
-}
-
-/* Diệt icon browser */
-.password-group input {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-/* Icon custom */
-.password-eye {
-  cursor: pointer;
-  background-color: #fff;
-}
-
-.password-eye i {
-  font-size: 18px;
-  color: #2c3e50;
-}
-
-.password-eye:hover i {
-  color: #0d6efd;
 }
 </style>
