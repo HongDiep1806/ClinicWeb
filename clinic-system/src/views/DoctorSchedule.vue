@@ -1053,70 +1053,38 @@ export default {
             const toast = useToast();
 
             try {
-                const requests = [];
-
                 for (let day of this.days) {
                     const item = this.schedules[day];
 
-                    // ❌ Unassigned + có schedule → DELETE
+                    // ❌ Case 1: Unassigned + có schedule → DELETE
                     if (!item.isAssigned && item.scheduleId) {
-                        requests.push(deleteSchedule(item.scheduleId));
+                        await deleteSchedule(item.scheduleId);
                         item.scheduleId = null;
+                        continue;
                     }
 
-                    // ✅ Assigned + chưa có schedule → CREATE
-                    else if (item.isAssigned && !item.scheduleId) {
+                    // ✅ Case 2: Assigned + chưa có schedule → CREATE
+                    if (item.isAssigned && !item.scheduleId) {
                         const time = this.getTimeByShift(item.shift);
 
-                        const payload = {
+                        const res = await createSchedule({
                             doctorId: this.selectedDoctor.userId,
                             dayOfWeek: day,
                             startTime: time.start + ":00",
                             endTime: time.end + ":00",
                             roomNumber: item.roomNumber
-                        };
+                        });
 
-                        requests.push(
-                            createSchedule(payload).then(res => {
-                                if (res?.data?.scheduleId) {
-                                    item.scheduleId = res.data.scheduleId;
-                                }
-                            })
-                        );
+                        if (res?.data?.scheduleId) {
+                            item.scheduleId = res.data.scheduleId;
+                        }
+
+                        continue;
                     }
 
-                    // 🔁 Assigned + đã có schedule → DELETE + CREATE (UPDATE giả lập)
-                    else if (item.isAssigned && item.scheduleId) {
-                        const time = this.getTimeByShift(item.shift);
-
-                        // delete cũ
-                        requests.push(deleteSchedule(item.scheduleId));
-
-                        // create mới
-                        const payload = {
-                            doctorId: this.selectedDoctor.userId,
-                            dayOfWeek: day,
-                            startTime: time.start + ":00",
-                            endTime: time.end + ":00",
-                            roomNumber: item.roomNumber
-                        };
-
-                        requests.push(
-                            createSchedule(payload).then(res => {
-                                if (res?.data?.scheduleId) {
-                                    item.scheduleId = res.data.scheduleId;
-                                }
-                            })
-                        );
-                    }
+                    // ✅ Case 3: Assigned + đã có schedule → KHÔNG LÀM GÌ
+                    // (backend chưa có update API → giữ nguyên)
                 }
-
-                if (requests.length === 0) {
-                    toast.info("No changes to save");
-                    return;
-                }
-
-                await Promise.all(requests);
 
                 toast.success("Weekly schedule saved successfully");
                 this.closeModal();
@@ -1126,6 +1094,7 @@ export default {
                 toast.error("Failed to save weekly schedule");
             }
         }
+
         ,
         getTimeByShift(shift) {
             if (shift === "Morning") {
