@@ -108,7 +108,7 @@
                         class="form-control" />
 
                       <span class="input-group-text password-eye" @click="showPassword.current = !showPassword.current">
-                        <i class="ti ti-eye"></i>
+                        <i :class="showPassword.current ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
                       </span>
                     </div>
                   </div>
@@ -124,7 +124,7 @@
                         class="form-control" />
 
                       <span class="input-group-text password-eye" @click="showPassword.new = !showPassword.new">
-                        <i class="ti ti-eye"></i>
+                        <i :class="showPassword.new ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
                       </span>
                     </div>
                   </div>
@@ -139,7 +139,7 @@
                         class="form-control" />
 
                       <span class="input-group-text password-eye" @click="showPassword.confirm = !showPassword.confirm">
-                        <i class="ti ti-eye"></i>
+                        <i :class="showPassword.confirm ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
                       </span>
                     </div>
                   </div>
@@ -407,6 +407,28 @@ input[type="password"]::-webkit-textfield-decoration-container {
   font-size: 18px;
   color: #2c3e50;
   /* navy */
+}
+
+.password-eye:hover i {
+  color: #0d6efd;
+}
+
+/* Diệt icon browser */
+.password-group input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Icon custom */
+.password-eye {
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.password-eye i {
+  font-size: 18px;
+  color: #2c3e50;
 }
 
 .password-eye:hover i {
