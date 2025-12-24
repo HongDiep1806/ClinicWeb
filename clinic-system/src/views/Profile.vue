@@ -100,6 +100,19 @@
 
               <form @submit.prevent="changePassword">
                 <div class="row mt-3">
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label">Current Password</label>
+
+                    <div class="input-group password-group">
+                      <input :type="showPassword.current ? 'text' : 'password'" v-model="password.current"
+                        class="form-control" />
+
+                      <span class="input-group-text password-eye" @click="showPassword.current = !showPassword.current">
+                        <i class="ti ti-eye"></i>
+                      </span>
+                    </div>
+                  </div>
+
 
 
 
