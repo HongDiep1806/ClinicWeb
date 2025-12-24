@@ -102,18 +102,42 @@
                 <div class="row mt-3">
                   <div class="col-md-4 mb-3">
                     <label class="form-label">Current Password</label>
-                    <input type="password" v-model="password.current" class="form-control" />
+
+                    <div class="input-group">
+                      <input :type="showPassword.current ? 'text' : 'password'" v-model="password.current"
+                        class="form-control" />
+                      <span class="input-group-text password-eye" @click="showPassword.current = !showPassword.current">
+                        <i :class="showPassword.current ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                      </span>
+                    </div>
                   </div>
+
 
                   <div class="col-md-4 mb-3">
                     <label class="form-label">New Password</label>
-                    <input type="password" v-model="password.new" class="form-control" />
+
+                    <div class="input-group">
+                      <input :type="showPassword.new ? 'text' : 'password'" v-model="password.new"
+                        class="form-control" />
+                      <span class="input-group-text password-eye" @click="showPassword.new = !showPassword.new">
+                        <i :class="showPassword.new ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                      </span>
+                    </div>
                   </div>
+
 
                   <div class="col-md-4 mb-3">
                     <label class="form-label">Confirm Password</label>
-                    <input type="password" v-model="password.confirm" class="form-control" />
+
+                    <div class="input-group">
+                      <input :type="showPassword.confirm ? 'text' : 'password'" v-model="password.confirm"
+                        class="form-control" />
+                      <span class="input-group-text password-eye" @click="showPassword.confirm = !showPassword.confirm">
+                        <i :class="showPassword.confirm ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
+                      </span>
+                    </div>
                   </div>
+
                 </div>
 
                 <div class="d-flex justify-content-end mt-3">
@@ -152,6 +176,12 @@ export default {
         gender: "",
         address: "",
       },
+      showPassword: {
+        current: false,
+        new: false,
+        confirm: false,
+      },
+
 
       dobModel: null,
 
