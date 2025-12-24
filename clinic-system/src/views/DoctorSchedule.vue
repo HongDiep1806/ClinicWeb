@@ -268,11 +268,11 @@ export default {
 
             return this.allAppointments.some(a => {
                 if (a.doctorId !== doctorId) return false;
-if (
-  a.status !== "CONFIRMED" &&
-  a.status !== "Confirmed" &&
-  a.status !== "PENDING"
-) return false;
+                if (
+                    a.status !== "CONFIRMED" &&
+                    a.status !== "Confirmed" &&
+                    a.status !== "Pending"
+                ) return false;
 
                 const apptDate = new Date(a.date);
                 if (isNaN(apptDate.getTime())) return false;
