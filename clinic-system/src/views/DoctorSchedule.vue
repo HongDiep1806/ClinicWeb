@@ -1058,14 +1058,14 @@ export default {
                 for (let day of this.days) {
                     const item = this.schedules[day];
 
-                    // ❌ Không assigned nhưng có schedule → DELETE
+                    // ❌ Unassigned + có schedule → DELETE
                     if (!item.isAssigned && item.scheduleId) {
                         requests.push(deleteSchedule(item.scheduleId));
                         item.scheduleId = null;
                     }
 
-                    // ✅ Assigned nhưng chưa có schedule → CREATE
-                    if (item.isAssigned && !item.scheduleId) {
+                    // ✅ Assigned + chưa có schedule → CREATE
+                    else if (item.isAssigned && !item.scheduleId) {
                         const time = this.getTimeByShift(item.shift);
 
                         const payload = {
@@ -1085,8 +1085,30 @@ export default {
                         );
                     }
 
+                    // 🔁 Assigned + đã có schedule → DELETE + CREATE (UPDATE giả lập)
+                    else if (item.isAssigned && item.scheduleId) {
+                        const time = this.getTimeByShift(item.shift);
 
-                    // ✅ Assigned + đã có scheduleId → bỏ qua (hoặc update nếu sau này có API update)
+                        // delete cũ
+                        requests.push(deleteSchedule(item.scheduleId));
+
+                        // create mới
+                        const payload = {
+                            doctorId: this.selectedDoctor.userId,
+                            dayOfWeek: day,
+                            startTime: time.start + ":00",
+                            endTime: time.end + ":00",
+                            roomNumber: item.roomNumber
+                        };
+
+                        requests.push(
+                            createSchedule(payload).then(res => {
+                                if (res?.data?.scheduleId) {
+                                    item.scheduleId = res.data.scheduleId;
+                                }
+                            })
+                        );
+                    }
                 }
 
                 if (requests.length === 0) {
@@ -1094,7 +1116,6 @@ export default {
                     return;
                 }
 
-                // ⏳ Chờ tất cả API hoàn tất
                 await Promise.all(requests);
 
                 toast.success("Weekly schedule saved successfully");
@@ -1104,7 +1125,8 @@ export default {
                 console.error("Save weekly schedule error:", error);
                 toast.error("Failed to save weekly schedule");
             }
-        },
+        }
+        ,
         getTimeByShift(shift) {
             if (shift === "Morning") {
                 return { start: "08:00", end: "12:00" };
