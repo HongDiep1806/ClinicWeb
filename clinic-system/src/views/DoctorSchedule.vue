@@ -280,6 +280,7 @@ export default {
 
         async cancelPendingAppointments(doctorId, day) {
             const targetDay = this.dayToNumber(day);
+
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
@@ -287,12 +288,16 @@ export default {
                 if (a.doctorId !== doctorId) return false;
                 if (a.status !== "PENDING") return false;
 
-                const apptDate = new Date(a.date);
-                if (isNaN(apptDate.getTime())) return false;
-
+                // ✅ PARSE ĐÚNG FORMAT DD/MM/YYYY
+                const raw = a.date.split(" ")[0]; // "31/12/2025"
+                const [d, m, y] = raw.split("/").map(Number);
+                const apptDate = new Date(y, m - 1, d);
                 apptDate.setHours(0, 0, 0, 0);
+
                 return apptDate >= today && apptDate.getDay() === targetDay;
             });
+
+            console.log("AUTO CANCEL LIST:", list);
 
             for (let a of list) {
                 await updateAppointmentStatus({
@@ -301,7 +306,8 @@ export default {
                     reason: "Cancelled due to schedule change"
                 });
             }
-        },
+        }
+        ,
 
         /* ========= MODAL ========= */
         async openScheduleModal(doc) {
