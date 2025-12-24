@@ -31,9 +31,18 @@
 
               <ul v-if="showPatientDropdown && filteredPatients.length" class="dropdown-menu show w-100 mt-1 shadow-sm"
                 style="max-height:220px; overflow-y:auto;">
-                <li v-for="p in filteredPatients" :key="p.userId" class="dropdown-item" @click="selectPatient(p)">
+                <!-- <li v-for="p in filteredPatients" :key="p.userId" class="dropdown-item" @click="selectPatient(p)">
                   {{ p.fullName }}
+                </li> -->
+                <li v-for="p in filteredPatients" :key="p.userId"
+                  class="dropdown-item d-flex justify-content-between align-items-end" @click="selectPatient(p)">
+                  <span>{{ p.fullName }}</span>
+
+                  <span class="badge bg-secondary-subtle text-secondary ms-2">
+                    #PT{{ p.userId }}
+                  </span>
                 </li>
+
               </ul>
 
               <div v-if="showPatientDropdown && !filteredPatients.length"
@@ -58,10 +67,21 @@
 
               <ul v-if="showDepartmentDropdown && filteredDepartments.length"
                 class="dropdown-menu show w-100 mt-1 shadow-sm" style="max-height:220px; overflow-y:auto;">
-                <li v-for="d in filteredDepartments" :key="d.departmentId" class="dropdown-item"
+                <!-- <li v-for="d in filteredDepartments" :key="d.departmentId" class="dropdown-item"
                   @click="selectDepartment(d)">
                   {{ d.name }}
+                </li> -->
+                <li v-for="d in filteredDoctors" :key="d.userId"
+                  class="dropdown-item d-flex justify-content-between align-items-end" @click="selectDoctor(d)">
+                  <span>{{ d.fullName }}</span>
+
+                  <span class="badge" :class="d.remainingSlots > 50
+                    ? 'bg-success-subtle text-success'
+                    : 'bg-warning-subtle text-warning'">
+                    {{ d.remainingSlots }} slots
+                  </span>
                 </li>
+
               </ul>
 
               <div v-if="showDepartmentDropdown && !filteredDepartments.length"
@@ -188,6 +208,8 @@ export default {
       shift: "",
       doctorId: ""
     });
+    const DAILY_KPI = 200;
+
 
 
     /* ===== PATIENT AUTOCOMPLETE ===== */
@@ -274,6 +296,61 @@ export default {
     };
 
 
+    // const loadFilteredDoctors = async () => {
+    //   if (!form.value.departmentId || !form.value.date || !form.value.shift) {
+    //     doctors.value = [];
+    //     return;
+    //   }
+
+    //   const weekdayIndex = getWeekday(form.value.date);
+    //   isWeekend.value = false;
+
+    //   const res = await getDoctorsByWeekday(weekdayIndex);
+    //   const doctorList = res.data || [];
+
+    //   const weekdayNames = [
+    //     "Monday",
+    //     "Tuesday",
+    //     "Wednesday",
+    //     "Thursday",
+    //     "Friday",
+    //     "Saturday",
+    //     "Sunday"
+    //   ];
+
+    //   // ✅ DÒNG QUAN TRỌNG
+    //   const dayName = weekdayNames[weekdayIndex];
+
+    //   const matchedDoctors = [];
+
+    //   for (const doc of doctorList) {
+    //     if (doc.departmentId != form.value.departmentId) continue;
+
+    //     const schRes = await getScheduleByDoctor(doc.userId);
+    //     const schedules = schRes.data || [];
+
+    //     const matched = schedules.find(s => {
+    //       const start = s.startTime.substring(0, 5);
+    //       const shift =
+    //         start === "08:00" ? "Morning" :
+    //           start === "13:00" ? "Afternoon" : "";
+
+    //       return (
+    //         s.dayOfWeek === dayName &&
+    //         shift === form.value.shift
+    //       );
+    //     });
+
+    //     if (matched) matchedDoctors.push(doc);
+    //   }
+
+    //   doctors.value = matchedDoctors;
+
+    //   if (!doctors.value.some(d => d.userId === form.value.doctorId)) {
+    //     form.value.doctorId = "";
+    //     doctorSearch.value = "";
+    //   }
+    // };
     const loadFilteredDoctors = async () => {
       if (!form.value.departmentId || !form.value.date || !form.value.shift) {
         doctors.value = [];
@@ -296,7 +373,6 @@ export default {
         "Sunday"
       ];
 
-      // ✅ DÒNG QUAN TRỌNG
       const dayName = weekdayNames[weekdayIndex];
 
       const matchedDoctors = [];
@@ -304,10 +380,11 @@ export default {
       for (const doc of doctorList) {
         if (doc.departmentId != form.value.departmentId) continue;
 
+        // 1️⃣ check schedule theo ngày + ca
         const schRes = await getScheduleByDoctor(doc.userId);
         const schedules = schRes.data || [];
 
-        const matched = schedules.find(s => {
+        const matchedSchedule = schedules.find(s => {
           const start = s.startTime.substring(0, 5);
           const shift =
             start === "08:00" ? "Morning" :
@@ -319,11 +396,33 @@ export default {
           );
         });
 
-        if (matched) matchedDoctors.push(doc);
+        if (!matchedSchedule) continue;
+
+        // 2️⃣ MOCK workload (vì không sửa backend)
+        // giáo viên CHO PHÉP giả lập
+        const appointmentCount =
+          matchedSchedule.currentAppointments ??
+          Math.floor(Math.random() * 20); // giả lập 0–19
+
+        const remainingSlots = DAILY_KPI - appointmentCount;
+
+        // 3️⃣ nếu muốn ẩn doctor full KPI
+        if (remainingSlots <= 0) continue;
+
+        matchedDoctors.push({
+          ...doc,
+          remainingSlots
+        });
       }
+
+      // 4️⃣ SORT giảm dần theo remaining slots
+      matchedDoctors.sort(
+        (a, b) => b.remainingSlots - a.remainingSlots
+      );
 
       doctors.value = matchedDoctors;
 
+      // clear doctor nếu không còn hợp lệ
       if (!doctors.value.some(d => d.userId === form.value.doctorId)) {
         form.value.doctorId = "";
         doctorSearch.value = "";
