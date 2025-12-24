@@ -67,20 +67,11 @@
 
               <ul v-if="showDepartmentDropdown && filteredDepartments.length"
                 class="dropdown-menu show w-100 mt-1 shadow-sm" style="max-height:220px; overflow-y:auto;">
-                <!-- <li v-for="d in filteredDepartments" :key="d.departmentId" class="dropdown-item"
+                <li v-for="d in filteredDepartments" :key="d.departmentId" class="dropdown-item"
                   @click="selectDepartment(d)">
                   {{ d.name }}
-                </li> -->
-                <li v-for="d in filteredDoctors" :key="d.userId"
-                  class="dropdown-item d-flex justify-content-between align-items-end" @click="selectDoctor(d)">
-                  <span>{{ d.fullName }}</span>
-
-                  <span class="badge" :class="d.remainingSlots > 50
-                    ? 'bg-success-subtle text-success'
-                    : 'bg-warning-subtle text-warning'">
-                    {{ d.remainingSlots }} slots
-                  </span>
                 </li>
+
 
               </ul>
 
@@ -142,8 +133,18 @@
 
               <ul v-if="showDoctorDropdown && filteredDoctors.length" class="dropdown-menu show w-100 mt-1 shadow-sm"
                 style="max-height:220px; overflow-y:auto;">
-                <li v-for="d in filteredDoctors" :key="d.userId" class="dropdown-item" @click="selectDoctor(d)">
+                <!-- <li v-for="d in filteredDoctors" :key="d.userId" class="dropdown-item" @click="selectDoctor(d)">
                   {{ d.fullName }}
+                </li> -->
+                <li v-for="d in filteredDoctors" :key="d.userId"
+                  class="dropdown-item d-flex justify-content-between align-items-end" @click="selectDoctor(d)">
+                  <span>{{ d.fullName }}</span>
+
+                  <span class="badge" :class="d.remainingSlots > 50
+                    ? 'bg-success-subtle text-success'
+                    : 'bg-warning-subtle text-warning'">
+                    {{ d.remainingSlots }} slots
+                  </span>
                 </li>
               </ul>
 
