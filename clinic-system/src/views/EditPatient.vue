@@ -42,7 +42,7 @@
                                     <!-- EMAIL -->
                                     <div class="mb-3">
                                         <label class="form-label">Email</label>
-                                        <input v-model="form.email" type="email" class="form-control" required />
+                                        <input v-model="form.email" type="email" class="form-control" disabled />
                                     </div>
 
                                     <!-- PHONE -->
