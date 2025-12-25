@@ -281,7 +281,10 @@ export default {
                 const res = await getAllPatients();
                 this.patients = res.data.map(p => ({
                     ...p,
-                    isActive: p.status === "Active"   
+                    isActive: p.status === "Active",
+                    dob: p.dob
+                        ? p.dob.split(".")[0].replace(" ", "T")
+                        : null
                 }));
 
             } catch (e) {
