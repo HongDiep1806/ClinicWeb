@@ -570,7 +570,10 @@ export default {
     formatDateTime(dateStr) {
       if (!dateStr) return "N/A";
 
-      return new Date(dateStr).toLocaleString("vi-VN", {
+      // ⚠️ ÉP CHUỖI THÀNH UTC
+      const utc = dateStr.endsWith("Z") ? dateStr : dateStr + "Z";
+
+      return new Date(utc).toLocaleString("vi-VN", {
         timeZone: "Asia/Ho_Chi_Minh",
         day: "2-digit",
         month: "2-digit",
@@ -579,6 +582,7 @@ export default {
         minute: "2-digit"
       });
     },
+
 
 
     formatDate(dateStr) {
