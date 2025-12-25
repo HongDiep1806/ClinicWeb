@@ -569,17 +569,17 @@ export default {
 
     formatDateTime(dateStr) {
       if (!dateStr) return "N/A";
-      const d = new Date(dateStr);
 
-      const day = String(d.getDate()).padStart(2, "0");
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const year = d.getFullYear();
-
-      const hours = String(d.getHours()).padStart(2, "0");
-      const minutes = String(d.getMinutes()).padStart(2, "0");
-
-      return `${day}/${month}/${year} – ${hours}:${minutes}`;
+      return new Date(dateStr).toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
     },
+
 
     formatDate(dateStr) {
       const d = new Date(dateStr);
@@ -595,31 +595,31 @@ export default {
       // TODO: call delete API
     },
 
-   async loadAppointments() {
-  try {
-    const res = await getAllAppointments();
-    const appts = res.data;
+    async loadAppointments() {
+      try {
+        const res = await getAllAppointments();
+        const appts = res.data;
 
-    this.appointments = appts.map(a => ({
-      appointmentId: a.appointmentId,
-      patientId: a.patientId,
-      doctorId: a.doctorId,
-      date: a.date,
-      status: a.status,
-      createdAt: a.createdAt,
-      departmentId: a.departmentId,
-      departmentName: a.departmentName,
-      doctorName: a.doctorName,
-      patientName: a.patientName
-    }));
+        this.appointments = appts.map(a => ({
+          appointmentId: a.appointmentId,
+          patientId: a.patientId,
+          doctorId: a.doctorId,
+          date: a.date,
+          status: a.status,
+          createdAt: a.createdAt,
+          departmentId: a.departmentId,
+          departmentName: a.departmentName,
+          doctorName: a.doctorName,
+          patientName: a.patientName
+        }));
 
-    // ⭐ SORT newest → oldest
-    this.appointments.sort((a, b) => new Date(b.date) - new Date(a.date));
+        // ⭐ SORT newest → oldest
+        this.appointments.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  } catch (err) {
-    console.error("Error loading appointments:", err);
-  }
-}
+      } catch (err) {
+        console.error("Error loading appointments:", err);
+      }
+    }
 
 
     ,
@@ -714,6 +714,7 @@ export default {
   padding: 6px 12px !important;
   font-size: 14px;
 }
+
 /* TẮT icon calendar của input type="date" */
 /* .filter-group input[type="date"].is-invalid::-webkit-calendar-picker-indicator {
   display: none;
@@ -723,6 +724,4 @@ export default {
 .filter-group input[type="date"].is-invalid {
   background-image: var(--bs-form-invalid-bg-icon);
 }
-
-
 </style>
