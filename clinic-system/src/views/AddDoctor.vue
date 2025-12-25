@@ -19,7 +19,7 @@
 
                                 <form @submit.prevent="handleSubmit">
                                     <h5 class="fs-18 fw-bold mb-3">New Doctor</h5>
-                                    <p class="text-muted mb-3">
+                                    <p class="text-muted mb-3" style="color: red;">
                                         Please fill in all information before submitting the form.
                                     </p>
 
@@ -290,6 +290,22 @@ export default {
             this.errors = { password: "", confirmPassword: "", phone: "", dob: "", address: "" };
             const toast = useToast();
 
+            if (!this.form.fullName ||
+                !this.form.email ||
+                !this.form.password ||
+                !this.confirmPassword ||
+                !this.form.phone ||
+                !this.dobModel ||
+                !this.form.gender ||
+                !this.selectedProvince ||
+                !this.selectedWard ||
+                !this.form.departmentId) {
+
+                toast.error("Please fill in all required information.");
+                return;
+            }
+
+
             /* ===== PASSWORD ===== */
             if (!this.form.password || this.form.password.length < 6) {
                 this.errors.password = "Password must be at least 6 characters.";
@@ -319,6 +335,7 @@ export default {
                 this.errors.address = "Please select full address.";
                 return;
             }
+
 
             try {
                 const dobFormatted = this.formatDate(this.dobModel);

@@ -34,42 +34,34 @@
 
                     <!-- Password -->
                     <!-- Password -->
-<div class="mb-3">
-  <label class="form-label">Password</label>
-  <div class="position-relative">
-    <div class="pass-group input-group border rounded">
+                    <div class="mb-3">
+                      <label class="form-label">Password</label>
+                      <div class="position-relative">
+                        <div class="pass-group input-group border rounded">
 
-      <span class="input-group-text bg-white border-0">
-        <i class="ti ti-lock text-dark fs-14"></i>
-      </span>
+                          <span class="input-group-text bg-white border-0">
+                            <i class="ti ti-lock text-dark fs-14"></i>
+                          </span>
 
-      <input
-        :type="showPassword ? 'text' : 'password'"
-        v-model="password"
-        class="form-control border-0 ps-0"
-        placeholder="*********"
-      />
+                          <input :type="showPassword ? 'text' : 'password'" v-model="password"
+                            class="form-control border-0 ps-0" placeholder="*********" />
 
-      <!-- Eye Icon -->
-      <span
-        class="input-group-text bg-white border-0 pe-2 pointer"
-        @click="togglePassword"
-        style="cursor: pointer;"
-      >
-        <i :class="showPassword ? 'ti ti-eye-off' : 'ti ti-eye'" class="fs-16"></i>
-      </span>
-    </div>
-  </div>
-</div>
+                          <!-- Eye Icon -->
+                          <span class="input-group-text bg-white border-0 pe-2 pointer" @click="togglePassword"
+                            style="cursor: pointer;">
+                            <i :class="showPassword ? 'ti ti-eye-off' : 'ti ti-eye'" class="fs-16"></i>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
 
                     <!-- Remember + Forgot -->
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                      <div class="form-check">
-                        <!-- <input class="form-check-input" id="remember" type="checkbox" />
-                        <label for="remember" class="form-check-label text-dark">Remember Me</label> -->
-                      </div>
-                      <a href="#" class="text-danger">Forgot Password?</a>
+                    <!-- Forgot Password (center) -->
+                    <div class="d-flex justify-content-center mb-3">
+                      <a href="#" class="text-danger fw-semibold">
+                        Forgot Password?
+                      </a>
                     </div>
 
                     <!-- Button -->
