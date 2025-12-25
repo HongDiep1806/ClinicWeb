@@ -365,11 +365,16 @@ export default {
                     day
                 );
 
+                // ❌ Tắt lịch
+                // ❌ Tắt lịch
                 if (!item.isAssigned && item.scheduleId) {
                     await deleteSchedule(item.scheduleId);
                 }
 
-                if (item.isAssigned && !item.scheduleId) {
+                // ✏️ Đổi shift (delete + create)
+                else if (item.isAssigned && item.scheduleId) {
+                    await deleteSchedule(item.scheduleId);
+
                     const time =
                         item.shift === "Morning"
                             ? { start: "08:00", end: "12:00" }
@@ -383,6 +388,24 @@ export default {
                         roomNumber: this.selectedDoctor.departmentName
                     });
                 }
+
+                // ➕ Gán mới
+                else if (item.isAssigned && !item.scheduleId) {
+                    const time =
+                        item.shift === "Morning"
+                            ? { start: "08:00", end: "12:00" }
+                            : { start: "13:00", end: "17:00" };
+
+                    await createSchedule({
+                        doctorId: this.selectedDoctor.userId,
+                        dayOfWeek: day,
+                        startTime: time.start + ":00",
+                        endTime: time.end + ":00",
+                        roomNumber: this.selectedDoctor.departmentName
+                    });
+                }
+
+
             }
 
             if (!hasBlocked) {
