@@ -118,7 +118,7 @@
                     <div class="col-xl-8 mb-4">
                         <div class="card shadow-sm h-100">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="fw-bold mb-0">Doctor Workload Of The Week</h5>
+                                <h5 class="fw-bold mb-0">Doctor Workload Of The Month</h5>
 
                                 <div class="dropdown">
                                     <button class="btn btn-light btn-sm" data-bs-toggle="dropdown">
@@ -743,20 +743,34 @@ export default {
         renderWorkloadChart() {
             if (this._chartWorkload) this._chartWorkload.destroy();
 
-            const { monday, sunday } = this.getCurrentWeekRange();
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
 
-            // Chỉ lấy appointment trong tuần + đang pending/confirmed
+            // Lọc appointment trong tháng hiện tại
             const validAppointments = this.appointments.filter(a => {
                 const d = new Date(a.date);
                 return (
-                    d >= monday &&
-                    d <= sunday &&
+                    d.getMonth() === currentMonth &&
+                    d.getFullYear() === currentYear &&
                     (a.status === "Pending" || a.status === "Confirmed")
                 );
             });
 
-            const count = {};
+            // Không có dữ liệu
+            if (!validAppointments.length) {
+                const el = document.querySelector("#doctor-workload");
+                if (el) {
+                    el.innerHTML = `
+              <div class="text-center text-muted mt-5">
+                No doctor workload for this month
+              </div>`;
+                }
+                return;
+            }
 
+            // Count theo doctor
+            const count = {};
             validAppointments.forEach(a => {
                 count[a.doctorId] = (count[a.doctorId] || 0) + 1;
             });
@@ -772,9 +786,6 @@ export default {
                 }
             });
 
-            // Không có dữ liệu
-            if (!labels.length) return;
-
             this._chartWorkload = new ApexCharts(
                 document.querySelector("#doctor-workload"),
                 {
@@ -784,7 +795,7 @@ export default {
                         toolbar: { show: false }
                     },
                     series: [{
-                        name: "Appointments (This Week)",
+                        name: "Appointments (This Month)",
                         data: values
                     }],
                     xaxis: {
@@ -799,6 +810,7 @@ export default {
 
             this._chartWorkload.render();
         }
+
         ,
 
         /* ------------------------------------------
