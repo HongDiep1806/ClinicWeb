@@ -348,7 +348,7 @@ export default {
                 await this.loadPatients();
 
             } catch (e) {
-                toast.error("Failed to update status");
+                toast.error("Failed to deactivate user due to having pending or confirmed appointments.");
                 console.error(e);
             }
         },
