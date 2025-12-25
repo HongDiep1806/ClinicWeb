@@ -251,6 +251,15 @@ export default {
         console.error("Load user failed:", e);
       }
     },
+    formatDateLocal(date) {
+      if (!date) return null;
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+    ,
 
     onProvinceChange() {
       const province = this.provinces.find(p => p.matinhBNV === this.selectedProvince);
@@ -286,7 +295,7 @@ export default {
         fullName: this.form.fullName,
         phone: this.form.phone,
         gender: this.form.gender,
-        dob: this.dobModel ? this.dobModel.toISOString().split("T")[0] : null,
+        dob: this.dobModel ? this.formatDateLocal(this.dobModel) : null,
         address: addressBuilt,
       };
 
