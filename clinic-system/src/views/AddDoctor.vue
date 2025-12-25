@@ -19,7 +19,7 @@
 
                                 <form @submit.prevent="handleSubmit">
                                     <h5 class="fs-18 fw-bold mb-3">New Doctor</h5>
-                                    <p class="text-muted mb-3" style="color: red;">
+                                    <p class="text-danger mb-3">
                                         Please fill in all information before submitting the form.
                                     </p>
 

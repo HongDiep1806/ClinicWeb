@@ -19,6 +19,9 @@
 
                 <form @submit.prevent="handleSubmit">
                   <h5 class="fs-18 fw-bold mb-3">New Patient</h5>
+                  <p class="text-danger mb-3">
+                    Please fill in all information before submitting the form.
+                  </p>
 
                   <!-- Avatar Preview -->
                   <div class="mb-3 d-flex align-items-center">
@@ -31,24 +34,23 @@
 
                   <!-- Full Name -->
                   <div class="mb-3">
-                    <label class="form-label">Full Name *</label>
+                    <label class="form-label">Full Name</label>
                     <input v-model="form.fullName" type="text" class="form-control" required />
                   </div>
 
                   <!-- Email -->
                   <div class="mb-3">
-                    <label class="form-label">Email *</label>
+                    <label class="form-label">Email</label>
                     <input v-model="form.email" type="email" class="form-control" required />
                   </div>
 
                   <!-- Password -->
                   <div class="mb-3">
-                    <label class="form-label">Password *</label>
+                    <label class="form-label">Password</label>
                     <div class="input-group">
-                      <input :type="showPassword ? 'text' : 'password'" v-model="form.password"
-                        class="form-control" required />
-                      <span class="input-group-text" @click="showPassword = !showPassword"
-                        style="cursor:pointer">
+                      <input :type="showPassword ? 'text' : 'password'" v-model="form.password" class="form-control"
+                        required />
+                      <span class="input-group-text" @click="showPassword = !showPassword" style="cursor:pointer">
                         <i :class="showPassword ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
                       </span>
                     </div>
@@ -57,7 +59,7 @@
 
                   <!-- Confirm Password -->
                   <div class="mb-3">
-                    <label class="form-label">Confirm Password *</label>
+                    <label class="form-label">Confirm Password</label>
                     <div class="input-group">
                       <input :type="showConfirmPassword ? 'text' : 'password'" v-model="confirmPassword"
                         class="form-control" required />
@@ -71,25 +73,24 @@
 
                   <!-- Phone -->
                   <div class="mb-3">
-                    <label class="form-label">Phone *</label>
+                    <label class="form-label">Phone</label>
                     <input v-model="form.phone" type="text" class="form-control" required />
                     <small v-if="errors.phone" class="text-danger">{{ errors.phone }}</small>
                   </div>
 
                   <!-- DOB -->
                   <div class="mb-3">
-                    <label class="form-label">Date of Birth *</label>
+                    <label class="form-label">Date of Birth</label>
                     <VueDatePicker v-model="dobModel" type="date" :formats="{ input: 'dd.MM.yyyy' }"
-                      :time-config="{ enableTimePicker: false }"
-                      :class="{ 'is-invalid': errors.dob }" />
+                      :time-config="{ enableTimePicker: false }" :class="{ 'is-invalid': errors.dob }" />
                     <small v-if="errors.dob" class="text-danger">{{ errors.dob }}</small>
                   </div>
 
                   <!-- Gender -->
                   <div class="mb-3">
-                    <label class="form-label">Gender *</label>
+                    <label class="form-label">Gender</label>
                     <select v-model="form.gender" class="form-control" required>
-                      <option value="">Select</option>
+                      <option value="" disabled>Select</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                     </select>
@@ -97,21 +98,20 @@
 
                   <!-- Address -->
                   <div class="mb-3">
-                    <label class="form-label">Address *</label>
+                    <label class="form-label">Address</label>
                     <div class="row">
                       <div class="col-md-6 mb-2">
-                        <select v-model="selectedProvince" @change="onProvinceChange"
-                          class="form-control" :class="{ 'is-invalid': errors.address }">
-                          <option value="">Select Province/City</option>
+                        <select v-model="selectedProvince" @change="onProvinceChange" class="form-control"
+                          :class="{ 'is-invalid': errors.address }">
+                          <option value="" disabled>Select Province/City</option>
                           <option v-for="p in provinces" :key="p.matinhBNV" :value="p.matinhBNV">
                             {{ p.tentinhmoi }}
                           </option>
                         </select>
                       </div>
                       <div class="col-md-6 mb-2">
-                        <select v-model="selectedWard" class="form-control"
-                          :class="{ 'is-invalid': errors.address }">
-                          <option value="">Select Ward</option>
+                        <select v-model="selectedWard" class="form-control" :class="{ 'is-invalid': errors.address }">
+                          <option value="" disabled>Select Ward</option>
                           <option v-for="w in wards" :key="w.maphuongxa" :value="w.maphuongxa">
                             {{ w.tenphuongxa }}
                           </option>
@@ -216,6 +216,20 @@ export default {
     async handleSubmit() {
       this.errors = { password: "", confirmPassword: "", phone: "", dob: "", address: "" };
       const toast = useToast();
+      if (
+        !this.form.fullName ||
+        !this.form.email ||
+        !this.form.password ||
+        !this.confirmPassword ||
+        !this.form.phone ||
+        !this.dobModel ||
+        !this.form.gender ||
+        !this.selectedProvince ||
+        !this.selectedWard
+      ) {
+        toast.error("Please fill in all required information.");
+        return;
+      }
 
       if (!this.form.password || this.form.password.length < 6) {
         this.errors.password = "Password must be at least 6 characters.";
