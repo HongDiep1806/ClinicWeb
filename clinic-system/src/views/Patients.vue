@@ -199,10 +199,10 @@
                                 <span>{{ selectedPatient.address || 'N/A' }}</span>
                             </li>
 
-                            <li class="list-group-item d-flex justify-content-between">
+                            <!-- <li class="list-group-item d-flex justify-content-between">
                                 <span class="fw-semibold">DOB</span>
                                 <span>{{ selectedPatient.dob ? selectedPatient.dob.split('T')[0] : 'N/A' }}</span>
-                            </li>
+                            </li> -->
 
                             <li class="list-group-item d-flex justify-content-between">
                                 <span class="fw-semibold">Status</span>
