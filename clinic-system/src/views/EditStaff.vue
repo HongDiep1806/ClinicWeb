@@ -19,6 +19,9 @@
 
                 <form @submit.prevent="handleSubmit">
                   <h5 class="fs-18 fw-bold mb-3">Staff Information</h5>
+                  <p class="text-danger mb-3">
+                    Please fill in all information before submitting the form.
+                  </p>
 
                   <!-- AVATAR -->
                   <div class="mb-3 d-flex align-items-center">
@@ -31,41 +34,36 @@
 
                   <!-- FULL NAME -->
                   <div class="mb-3">
-                    <label class="form-label">Full Name *</label>
+                    <label class="form-label">Full Name</label>
                     <input v-model="form.fullName" type="text" class="form-control" required />
                   </div>
 
                   <!-- EMAIL -->
                   <div class="mb-3">
-                    <label class="form-label">Email *</label>
-                    <input v-model="form.email" type="email" class="form-control" required />
+                    <label class="form-label">Email</label>
+                    <input v-model="form.email" type="email" class="form-control" disabled />
                   </div>
 
                   <!-- PHONE -->
                   <div class="mb-3">
-                    <label class="form-label">Phone *</label>
+                    <label class="form-label">Phone</label>
                     <input v-model="form.phone" type="text" class="form-control" required />
                     <small v-if="errors.phone" class="text-danger">{{ errors.phone }}</small>
                   </div>
 
                   <!-- DOB -->
                   <div class="mb-3">
-                    <label class="form-label">Date of Birth *</label>
-                    <VueDatePicker
-                      v-model="dobModel"
-                      type="date"
-                      :formats="{ input: 'dd.MM.yyyy' }"
-                      :time-config="{ enableTimePicker: false }"
-                      :class="{ 'is-invalid': errors.dob }"
-                    />
+                    <label class="form-label">Date of Birth</label>
+                    <VueDatePicker v-model="dobModel" type="date" :formats="{ input: 'dd.MM.yyyy' }"
+                      :time-config="{ enableTimePicker: false }" :class="{ 'is-invalid': errors.dob }" />
                     <small v-if="errors.dob" class="text-danger">{{ errors.dob }}</small>
                   </div>
 
                   <!-- GENDER -->
                   <div class="mb-3">
-                    <label class="form-label">Gender *</label>
+                    <label class="form-label">Gender</label>
                     <select v-model="form.gender" class="form-control" required>
-                      <option value="">Select</option>
+                      <option value="" disabled>Select</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                     </select>
@@ -73,11 +71,10 @@
 
                   <!-- ADDRESS -->
                   <div class="mb-3">
-                    <label class="form-label">Address *</label>
+                    <label class="form-label">Address</label>
                     <div class="row">
                       <div class="col-md-6 mb-2">
-                        <select v-model="selectedProvince" @change="onProvinceChange"
-                          class="form-control">
+                        <select v-model="selectedProvince" @change="onProvinceChange" class="form-control">
                           <option value="">Select Province</option>
                           <option v-for="p in provinces" :key="p.matinhBNV" :value="p.matinhBNV">
                             {{ p.tentinhmoi }}
@@ -87,7 +84,7 @@
 
                       <div class="col-md-6 mb-2">
                         <select v-model="selectedWard" class="form-control">
-                          <option value="">Select Ward</option>
+                          <option value="" disabled>Select Ward</option>
                           <option v-for="w in wards" :key="w.maphuongxa" :value="w.maphuongxa">
                             {{ w.tenphuongxa }}
                           </option>
