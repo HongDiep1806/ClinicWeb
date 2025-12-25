@@ -473,14 +473,26 @@ export default {
 
         statusBadge(status) {
             switch (status) {
-                case "Pending": return "badge status-pending";
-                case "Confirmed": return "badge status-confirmed";
-                case "Completed": return "badge status-completed";
-                case "Cancelled": return "badge status-cancelled";
-                case "NoShow": return "badge status-noshow";
-                default: return "badge status-noshow";
+                case "Pending":
+                    return "badge bg-warning-subtle text-warning fw-semibold";
+
+                case "Confirmed":
+                    return "badge bg-success-subtle text-success fw-semibold";
+
+                case "Completed":
+                    return "badge bg-info-subtle text-info fw-semibold";
+
+                case "Cancelled":
+                    return "badge bg-danger-subtle text-danger fw-semibold";
+
+                case "NoShow":
+                    return "badge bg-secondary-subtle text-secondary fw-semibold";
+
+                default:
+                    return "badge bg-light text-dark";
             }
         },
+
 
         formatDate(date) {
             return new Date(date).toLocaleDateString("en-GB");
