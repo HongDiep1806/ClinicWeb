@@ -37,8 +37,11 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                  <label class="form-label">Email *</label>
-                  <input v-model="form.email" class="form-control" disabled/>
+                  <label class="form-label">
+                    Email
+                    <small class="text-muted">(Cannot be changed)</small>
+                  </label>
+                  <input v-model="form.email" class="form-control" disabled />
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -281,31 +284,15 @@ export default {
 
       const payload = {
         fullName: this.form.fullName,
-        email: this.form.email,
         phone: this.form.phone,
         gender: this.form.gender,
         dob: this.dobModel ? this.dobModel.toISOString().split("T")[0] : null,
         address: addressBuilt,
       };
 
+
       try {
-        const oldEmail = this.auth.user.email;
-
         await updateUser(this.auth.user.userId, payload);
-
-        const emailChanged = payload.email !== oldEmail;
-
-        if (emailChanged) {
-          toast.success("Email updated successfully! Please login again.");
-
-          // Cho người dùng thấy toast trong 1.2s rồi logout
-          setTimeout(() => {
-            this.auth.logout();
-          }, 1200);
-
-          return;
-        }
-
         toast.success("Profile updated!");
 
       } catch (err) {
@@ -385,12 +372,14 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
 .password-wrapper {
   position: relative;
 }
 
 .password-wrapper input {
-  padding-right: 42px; /* chừa chỗ cho icon */
+  padding-right: 42px;
+  /* chừa chỗ cho icon */
 }
 
 .eye-icon {
@@ -410,4 +399,9 @@ export default {
   font-size: 18px;
 }
 
+input:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
 </style>
