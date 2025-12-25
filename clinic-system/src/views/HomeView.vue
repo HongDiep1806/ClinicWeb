@@ -373,7 +373,7 @@ export default {
                     this.renderAppointmentChart();
                     this.renderStatusDonut();
                     this.renderWorkloadChart();
-                    this.renderPatientGrowth();
+                    // this.renderPatientGrowth();
                     this.renderCalendar();
                 });
 
@@ -804,45 +804,45 @@ export default {
         /* ------------------------------------------
          * PATIENT GROWTH (7 days line chart)
          * ------------------------------------------ */
-        renderPatientGrowth() {
-            if (this._chartGrowth) this._chartGrowth.destroy();
+        // renderPatientGrowth() {
+        //     if (this._chartGrowth) this._chartGrowth.destroy();
 
-            const result = {};
-            const today = new Date();
+        //     const result = {};
+        //     const today = new Date();
 
-            [...Array(7)].forEach((_, i) => {
-                const d = new Date(today);
-                d.setDate(today.getDate() - i);
-                const key = d.toLocaleDateString("en-GB");
-                result[key] = 0;
-            });
+        //     [...Array(7)].forEach((_, i) => {
+        //         const d = new Date(today);
+        //         d.setDate(today.getDate() - i);
+        //         const key = d.toLocaleDateString("en-GB");
+        //         result[key] = 0;
+        //     });
 
-            this.patients.forEach(p => {
-                const d = new Date(p.createdAt);
-                const k = d.toLocaleDateString("en-GB");
-                if (result[k] !== undefined) result[k]++;
-            });
+        //     this.patients.forEach(p => {
+        //         const d = new Date(p.createdAt);
+        //         const k = d.toLocaleDateString("en-GB");
+        //         if (result[k] !== undefined) result[k]++;
+        //     });
 
-            const labels = Object.keys(result).reverse();
-            const values = Object.values(result).reverse();
+        //     const labels = Object.keys(result).reverse();
+        //     const values = Object.values(result).reverse();
 
-            this._chartGrowth = new ApexCharts(
-                document.querySelector("#patient-growth"),
-                {
-                    chart: { type: "area", height: 300 },
-                    series: [{ name: "New Patients", data: values }],
-                    xaxis: { categories: labels },
-                    colors: ["#00b8a9"],
-                    stroke: { width: 3 },
-                    fill: {
-                        type: "gradient",
-                        gradient: { opacityFrom: 0.45, opacityTo: 0.05 }
-                    }
-                }
-            );
+        //     this._chartGrowth = new ApexCharts(
+        //         document.querySelector("#patient-growth"),
+        //         {
+        //             chart: { type: "area", height: 300 },
+        //             series: [{ name: "New Patients", data: values }],
+        //             xaxis: { categories: labels },
+        //             colors: ["#00b8a9"],
+        //             stroke: { width: 3 },
+        //             fill: {
+        //                 type: "gradient",
+        //                 gradient: { opacityFrom: 0.45, opacityTo: 0.05 }
+        //             }
+        //         }
+        //     );
 
-            this._chartGrowth.render();
-        },
+        //     this._chartGrowth.render();
+        // },
 
         /* ------------------------------------------
          * MINI CALENDAR (simple version)
