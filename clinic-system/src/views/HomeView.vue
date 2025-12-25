@@ -771,7 +771,7 @@ export default {
                 return (
                     d.getMonth() === currentMonth &&
                     d.getFullYear() === currentYear &&
-                    (a.status === "Pending" || a.status === "Confirmed")
+                    a.status !== "Cancelled"
                 );
             });
 
