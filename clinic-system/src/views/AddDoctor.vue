@@ -19,6 +19,9 @@
 
                                 <form @submit.prevent="handleSubmit">
                                     <h5 class="fs-18 fw-bold mb-3">New Doctor</h5>
+                                    <p class="text-muted mb-3">
+                                        Please fill in all information before submitting the form.
+                                    </p>
 
                                     <!-- Avatar Preview -->
                                     <div class="mb-3 d-flex align-items-center">
@@ -31,19 +34,19 @@
 
                                     <!-- Full Name -->
                                     <div class="mb-3">
-                                        <label class="form-label">Full Name *</label>
+                                        <label class="form-label">Full Name</label>
                                         <input v-model="form.fullName" type="text" class="form-control" required />
                                     </div>
 
                                     <!-- Email -->
                                     <div class="mb-3">
-                                        <label class="form-label">Email *</label>
+                                        <label class="form-label">Email</label>
                                         <input v-model="form.email" type="email" class="form-control" required />
                                     </div>
 
                                     <!-- Password -->
                                     <div class="mb-3">
-                                        <label class="form-label">Password *</label>
+                                        <label class="form-label">Password</label>
                                         <div class="input-group">
                                             <input :type="showPassword ? 'text' : 'password'" v-model="form.password"
                                                 class="form-control" required />
@@ -57,7 +60,7 @@
 
                                     <!-- Confirm Password -->
                                     <div class="mb-3">
-                                        <label class="form-label">Confirm Password *</label>
+                                        <label class="form-label">Confirm Password</label>
                                         <div class="input-group">
                                             <input :type="showConfirmPassword ? 'text' : 'password'"
                                                 v-model="confirmPassword" class="form-control" required />
@@ -74,7 +77,7 @@
 
                                     <!-- Phone -->
                                     <div class="mb-3">
-                                        <label class="form-label">Phone *</label>
+                                        <label class="form-label">Phone</label>
                                         <input v-model="form.phone" type="text" class="form-control" required />
                                         <small v-if="errors.phone" class="text-danger">{{ errors.phone }}</small>
                                     </div>
@@ -83,7 +86,7 @@
                                     <!-- DOB -->
                                     <!-- DOB -->
                                     <div class="mb-3">
-                                        <label class="form-label">Date of Birth *</label>
+                                        <label class="form-label">Date of Birth</label>
 
                                         <VueDatePicker v-model="dobModel" type="date" :formats="{ input: 'dd.MM.yyyy' }"
                                             :time-config="{ enableTimePicker: false }"
@@ -106,7 +109,7 @@
                                     <!-- Address -->
                                     <!-- Address -->
                                     <div class="mb-3">
-                                        <label class="form-label">Address *</label>
+                                        <label class="form-label">Address</label>
 
                                         <div class="row">
                                             <div class="col-md-6 mb-2">
@@ -139,7 +142,7 @@
 
                                     <!-- Department -->
                                     <div class="mb-3">
-                                        <label class="form-label">Department *</label>
+                                        <label class="form-label">Department</label>
                                         <select v-model="form.departmentId" class="form-control" required>
                                             <option value="">Select</option>
 
