@@ -12,6 +12,7 @@
                             <h6 class="fw-bold mb-0">
                                 <i class="ti ti-chevron-left me-1 fs-14"></i> Edit Patient
                             </h6>
+
                         </div>
 
                         <div class="card">
@@ -19,6 +20,9 @@
 
                                 <form @submit.prevent="handleSubmit">
                                     <h5 class="fs-18 fw-bold mb-3">Patient Information</h5>
+                                    <p class="text-danger mb-3">
+                                        Please fill in all information before submitting the form.
+                                    </p>
 
                                     <!-- AVATAR -->
                                     <div class="mb-3 d-flex align-items-center">
@@ -31,19 +35,19 @@
 
                                     <!-- FULL NAME -->
                                     <div class="mb-3">
-                                        <label class="form-label">Full Name *</label>
+                                        <label class="form-label">Full Name</label>
                                         <input v-model="form.fullName" type="text" class="form-control" required />
                                     </div>
 
                                     <!-- EMAIL -->
                                     <div class="mb-3">
-                                        <label class="form-label">Email *</label>
+                                        <label class="form-label">Email</label>
                                         <input v-model="form.email" type="email" class="form-control" required />
                                     </div>
 
                                     <!-- PHONE -->
                                     <div class="mb-3">
-                                        <label class="form-label">Phone *</label>
+                                        <label class="form-label">Phone</label>
                                         <input v-model="form.phone" type="text" class="form-control" required />
                                         <small v-if="errors.phone" class="text-danger">{{ errors.phone }}</small>
                                     </div>
@@ -59,7 +63,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">Gender</label>
                                         <select v-model="form.gender" class="form-control">
-                                            <option value="">Select</option>
+                                            <option value="" disabled>Select</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
                                         </select>
@@ -72,7 +76,7 @@
                                             <div class="col-md-6 mb-2">
                                                 <select v-model="selectedProvince" @change="onProvinceChange"
                                                     class="form-control">
-                                                    <option value="">Select Province</option>
+                                                    <option value="" disabled>Select Province</option>
                                                     <option v-for="p in provinces" :key="p.matinhBNV"
                                                         :value="p.matinhBNV">
                                                         {{ p.tentinhmoi }}
@@ -82,7 +86,7 @@
 
                                             <div class="col-md-6 mb-2">
                                                 <select v-model="selectedWard" class="form-control">
-                                                    <option value="">Select Ward</option>
+                                                    <option value="" disabled>Select Ward</option>
                                                     <option v-for="w in wards" :key="w.maphuongxa"
                                                         :value="w.maphuongxa">
                                                         {{ w.tenphuongxa }}
@@ -198,16 +202,16 @@ export default {
                 // FIX DOB — CHUYỂN " " thành "T"
                 // ================================
                 if (p.dob) {
-    // Cắt phần .0000000 nếu có
-    const clean = p.dob.split(".")[0];
+                    // Cắt phần .0000000 nếu có
+                    const clean = p.dob.split(".")[0];
 
-    // Đổi “yyyy-MM-dd HH:mm:ss” → “yyyy-MM-ddTHH:mm:ss”
-    const iso = clean.replace(" ", "T");
+                    // Đổi “yyyy-MM-dd HH:mm:ss” → “yyyy-MM-ddTHH:mm:ss”
+                    const iso = clean.replace(" ", "T");
 
-    this.dobModel = new Date(iso);
-} else {
-    this.dobModel = null;
-}
+                    this.dobModel = new Date(iso);
+                } else {
+                    this.dobModel = null;
+                }
 
 
                 // ================================

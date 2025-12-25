@@ -19,6 +19,9 @@
 
                                 <form @submit.prevent="handleSubmit">
                                     <h5 class="fs-18 fw-bold mb-3">Doctor Information</h5>
+                                     <p class="text-danger mb-3">
+                                        Please fill in all information before submitting the form.
+                                    </p>
 
                                     <!-- Avatar Preview -->
                                     <div class="mb-3 d-flex align-items-center">
@@ -31,19 +34,19 @@
 
                                     <!-- Full Name -->
                                     <div class="mb-3">
-                                        <label class="form-label">Full Name *</label>
+                                        <label class="form-label">Full Name</label>
                                         <input v-model="form.fullName" type="text" class="form-control" required />
                                     </div>
 
                                     <!-- Email -->
                                     <div class="mb-3">
-                                        <label class="form-label">Email *</label>
-                                        <input v-model="form.email" type="email" class="form-control" required />
+                                        <label class="form-label">Email</label>
+                                        <input v-model="form.email" type="email" class="form-control" disabled />
                                     </div>
 
                                     <!-- Phone -->
                                     <div class="mb-3">
-                                        <label class="form-label">Phone *</label>
+                                        <label class="form-label">Phone</label>
                                         <input v-model="form.phone" type="text" class="form-control" required />
                                         <small v-if="errors.phone" class="text-danger">{{ errors.phone }}</small>
                                     </div>
@@ -100,7 +103,7 @@
 
                                     <!-- Department -->
                                     <div class="mb-3">
-                                        <label class="form-label">Department *</label>
+                                        <label class="form-label">Department</label>
                                         <select v-model="form.departmentId" class="form-control" required>
                                             <option value="" disabled>Select</option>
 
