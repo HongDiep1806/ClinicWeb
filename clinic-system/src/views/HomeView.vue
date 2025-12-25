@@ -318,19 +318,13 @@ export default {
             ];
         },
 
-        /* ---------- RECENT APPOINTMENTS (7 ngày) ---------- */
+        /* ---------- RECENT APPOINTMENTS (10 new apppointments) ---------- */
         recentAppointments() {
-            const today = new Date();
-
-            return this.appointments
-                .filter(a => {
-                    const d = new Date(a.date);
-                    const diff = (today - d) / (1000 * 60 * 60 * 24);
-                    return diff <= 7 && diff >= 0;
-                })
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
+            return [...this.appointments]
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                 .slice(0, 10);
-        },
+        }
+
     },
 
     watch: {
