@@ -100,7 +100,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">Gender</label>
                                         <select v-model="form.gender" class="form-control" required>
-                                            <option value="">Select</option>
+                                            <option value="" disabled>Select</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
                                         </select>
@@ -115,7 +115,7 @@
                                             <div class="col-md-6 mb-2">
                                                 <select v-model="selectedProvince" @change="onProvinceChange"
                                                     class="form-control" :class="{ 'is-invalid': errors.address }">
-                                                    <option value="">Select Province/City</option>
+                                                    <option value="" disabled>Select Province/City</option>
                                                     <option v-for="p in provinces" :key="p.matinhBNV"
                                                         :value="p.matinhBNV">
                                                         {{ p.tentinhmoi }}
@@ -126,7 +126,7 @@
                                             <div class="col-md-6 mb-2">
                                                 <select v-model="selectedWard" class="form-control"
                                                     :class="{ 'is-invalid': errors.address }">
-                                                    <option value="">Select Ward</option>
+                                                    <option value="" disabled>Select Ward</option>
                                                     <option v-for="w in wards" :key="w.maphuongxa"
                                                         :value="w.maphuongxa">
                                                         {{ w.tenphuongxa }}
@@ -144,7 +144,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">Department</label>
                                         <select v-model="form.departmentId" class="form-control" required>
-                                            <option value="">Select</option>
+                                            <option value="" disabled>Select</option>
 
                                             <option v-for="dept in departments" :key="dept.departmentId"
                                                 :value="dept.departmentId">
