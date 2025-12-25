@@ -66,8 +66,8 @@
                     <!-- Remember + Forgot -->
                     <div class="d-flex align-items-center justify-content-between mb-3">
                       <div class="form-check">
-                        <input class="form-check-input" id="remember" type="checkbox" />
-                        <label for="remember" class="form-check-label text-dark">Remember Me</label>
+                        <!-- <input class="form-check-input" id="remember" type="checkbox" />
+                        <label for="remember" class="form-check-label text-dark">Remember Me</label> -->
                       </div>
                       <a href="#" class="text-danger">Forgot Password?</a>
                     </div>
