@@ -619,14 +619,15 @@ export default {
 
         /* -------- MONTHLY -------- */
         getMonthlyData() {
-            const now = new Date();
-            const month = now.getMonth();
-            const year = now.getFullYear();
+            const userNow = new Date(
+                new Date().toLocaleString("en-US", {
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                })
+            );
 
-            // tổng số ngày trong tháng
-            const totalDays = new Date(year, month + 1, 0).getDate();
+            const month = userNow.getMonth();
+            const year = userNow.getFullYear();
 
-            // 4 tuần
             const weeks = [0, 0, 0, 0];
 
             this.appointments.forEach(a => {
@@ -634,7 +635,6 @@ export default {
 
                 if (d.getMonth() === month && d.getFullYear() === year) {
                     const day = d.getDate();
-
                     if (day <= 7) weeks[0]++;
                     else if (day <= 14) weeks[1]++;
                     else if (day <= 21) weeks[2]++;
@@ -647,6 +647,7 @@ export default {
                 values: weeks
             };
         }
+
         ,
 
         /* -------- YEARLY -------- */
@@ -743,9 +744,14 @@ export default {
         renderWorkloadChart() {
             if (this._chartWorkload) this._chartWorkload.destroy();
 
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
+            const userNow = new Date(
+                new Date().toLocaleString("en-US", {
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                })
+            );
+
+            const currentMonth = userNow.getMonth();
+            const currentYear = userNow.getFullYear();
 
             // Lọc appointment trong tháng hiện tại
             const validAppointments = this.appointments.filter(a => {
