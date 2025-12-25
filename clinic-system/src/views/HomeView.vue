@@ -118,7 +118,7 @@
                     <div class="col-xl-8 mb-4">
                         <div class="card shadow-sm h-100">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="fw-bold mb-0">Doctor Workload</h5>
+                                <h5 class="fw-bold mb-0">Doctor Workload Of The Week</h5>
 
                                 <div class="dropdown">
                                     <button class="btn btn-light btn-sm" data-bs-toggle="dropdown">
@@ -563,6 +563,22 @@ export default {
                 case "yearly": return this.getYearlyData();
             }
         },
+        getCurrentWeekRange() {
+            const today = new Date();
+            const day = today.getDay(); // 0 = Sun
+            const diffToMonday = day === 0 ? -6 : 1 - day;
+
+            const monday = new Date(today);
+            monday.setDate(today.getDate() + diffToMonday);
+            monday.setHours(0, 0, 0, 0);
+
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            sunday.setHours(23, 59, 59, 999);
+
+            return { monday, sunday };
+        }
+        ,
 
         /* -------- WEEKLY -------- */
         getWeeklyData() {
@@ -727,8 +743,21 @@ export default {
         renderWorkloadChart() {
             if (this._chartWorkload) this._chartWorkload.destroy();
 
+            const { monday, sunday } = this.getCurrentWeekRange();
+
+            // Chỉ lấy appointment trong tuần + đang pending/confirmed
+            const validAppointments = this.appointments.filter(a => {
+                const d = new Date(a.date);
+                return (
+                    d >= monday &&
+                    d <= sunday &&
+                    (a.status === "Pending" || a.status === "Confirmed")
+                );
+            });
+
             const count = {};
-            this.appointments.forEach(a => {
+
+            validAppointments.forEach(a => {
                 count[a.doctorId] = (count[a.doctorId] || 0) + 1;
             });
 
@@ -743,19 +772,34 @@ export default {
                 }
             });
 
+            // Không có dữ liệu
+            if (!labels.length) return;
+
             this._chartWorkload = new ApexCharts(
                 document.querySelector("#doctor-workload"),
                 {
-                    chart: { type: "bar", height: 300, toolbar: { show: false } },
-                    series: [{ name: "Appointments", data: values }],
-                    xaxis: { categories: labels },
-                    plotOptions: { bar: { borderRadius: 6 } },
-                    colors: ["#2e37a4d9"],
+                    chart: {
+                        type: "bar",
+                        height: 300,
+                        toolbar: { show: false }
+                    },
+                    series: [{
+                        name: "Appointments (This Week)",
+                        data: values
+                    }],
+                    xaxis: {
+                        categories: labels
+                    },
+                    plotOptions: {
+                        bar: { borderRadius: 6 }
+                    },
+                    colors: ["#4A90E2"]
                 }
             );
 
             this._chartWorkload.render();
-        },
+        }
+        ,
 
         /* ------------------------------------------
          * PATIENT GROWTH (7 days line chart)
