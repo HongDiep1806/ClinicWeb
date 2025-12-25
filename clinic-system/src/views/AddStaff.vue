@@ -19,40 +19,37 @@
 
                 <form @submit.prevent="handleSubmit">
                   <h5 class="fs-18 fw-bold mb-3">Add Staff</h5>
+                  <p class="text-danger mb-3">
+                    Please fill in all information before submitting the form.
+                  </p>
 
                   <!-- Avatar -->
                   <div class="mb-3 d-flex align-items-center">
                     <label class="form-label me-3">Profile Image</label>
-                    <div
-                      class="avatar-circle d-flex align-items-center justify-content-center"
-                      :style="{ backgroundColor: avatarColor }"
-                    >
+                    <div class="avatar-circle d-flex align-items-center justify-content-center"
+                      :style="{ backgroundColor: avatarColor }">
                       <span class="avatar-initial">{{ avatarInitial }}</span>
                     </div>
                   </div>
 
                   <!-- FULL NAME -->
                   <div class="mb-3">
-                    <label class="form-label">Full Name *</label>
+                    <label class="form-label">Full Name</label>
                     <input v-model="form.fullName" type="text" class="form-control" required />
                   </div>
 
                   <!-- EMAIL -->
                   <div class="mb-3">
-                    <label class="form-label">Email *</label>
+                    <label class="form-label">Email</label>
                     <input v-model="form.email" type="email" class="form-control" required />
                   </div>
 
                   <!-- PASSWORD -->
                   <div class="mb-3">
-                    <label class="form-label">Password *</label>
+                    <label class="form-label">Password</label>
                     <div class="input-group">
-                      <input
-                        :type="showPassword ? 'text' : 'password'"
-                        v-model="form.password"
-                        class="form-control"
-                        required
-                      />
+                      <input :type="showPassword ? 'text' : 'password'" v-model="form.password" class="form-control"
+                        required />
                       <span class="input-group-text" @click="showPassword = !showPassword">
                         <i :class="showPassword ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
                       </span>
@@ -62,14 +59,10 @@
 
                   <!-- CONFIRM PASSWORD -->
                   <div class="mb-3">
-                    <label class="form-label">Confirm Password *</label>
+                    <label class="form-label">Confirm Password</label>
                     <div class="input-group">
-                      <input
-                        :type="showConfirmPassword ? 'text' : 'password'"
-                        v-model="confirmPassword"
-                        class="form-control"
-                        required
-                      />
+                      <input :type="showConfirmPassword ? 'text' : 'password'" v-model="confirmPassword"
+                        class="form-control" required />
                       <span class="input-group-text" @click="showConfirmPassword = !showConfirmPassword">
                         <i :class="showConfirmPassword ? 'ti ti-eye-off' : 'ti ti-eye'"></i>
                       </span>
@@ -79,31 +72,26 @@
 
                   <!-- PHONE -->
                   <div class="mb-3">
-                    <label class="form-label">Phone *</label>
+                    <label class="form-label">Phone</label>
                     <input v-model="form.phone" type="text" class="form-control" required />
                     <small v-if="errors.phone" class="text-danger">{{ errors.phone }}</small>
                   </div>
 
                   <!-- DOB -->
                   <div class="mb-3">
-                    <label class="form-label">Date of Birth *</label>
+                    <label class="form-label">Date of Birth</label>
 
-                    <VueDatePicker
-                      v-model="dobModel"
-                      type="date"
-                      :formats="{ input: 'dd.MM.yyyy' }"
-                      :time-config="{ enableTimePicker: false }"
-                      :class="{ 'is-invalid': errors.dob }"
-                    />
+                    <VueDatePicker v-model="dobModel" type="date" :formats="{ input: 'dd.MM.yyyy' }"
+                      :time-config="{ enableTimePicker: false }" :class="{ 'is-invalid': errors.dob }" />
 
                     <small v-if="errors.dob" class="text-danger">{{ errors.dob }}</small>
                   </div>
 
                   <!-- Gender -->
                   <div class="mb-3">
-                    <label class="form-label">Gender *</label>
+                    <label class="form-label">Gender</label>
                     <select v-model="form.gender" class="form-control" required>
-                      <option value="">Select gender</option>
+                      <option value="" disabled>Select gender</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                     </select>
@@ -111,17 +99,13 @@
 
                   <!-- ADDRESS -->
                   <div class="mb-3">
-                    <label class="form-label">Address *</label>
+                    <label class="form-label">Address</label>
 
                     <div class="row">
                       <div class="col-md-6 mb-2">
-                        <select
-                          v-model="selectedProvince"
-                          @change="onProvinceChange"
-                          class="form-control"
-                          :class="{ 'is-invalid': errors.address }"
-                        >
-                          <option value="">Select Province</option>
+                        <select v-model="selectedProvince" @change="onProvinceChange" class="form-control"
+                          :class="{ 'is-invalid': errors.address }">
+                          <option value="" disabled>Select Province</option>
                           <option v-for="p in provinces" :key="p.matinhBNV" :value="p.matinhBNV">
                             {{ p.tentinhmoi }}
                           </option>
@@ -129,12 +113,8 @@
                       </div>
 
                       <div class="col-md-6 mb-2">
-                        <select
-                          v-model="selectedWard"
-                          class="form-control"
-                          :class="{ 'is-invalid': errors.address }"
-                        >
-                          <option value="">Select Ward</option>
+                        <select v-model="selectedWard" class="form-control" :class="{ 'is-invalid': errors.address }">
+                          <option value="" disabled>Select Ward</option>
                           <option v-for="w in wards" :key="w.maphuongxa" :value="w.maphuongxa">
                             {{ w.tenphuongxa }}
                           </option>
