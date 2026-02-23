@@ -41,3 +41,5 @@ export function applyTheme() {
     settings.sidenav?.user ? "true" : "false"
   );
 }
+window.applyTheme = applyTheme; 
+

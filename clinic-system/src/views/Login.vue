@@ -116,7 +116,9 @@ export default {
       try {
         // ⭐ MUST HAVE: cookie tự động lưu refreshToken vào HttpOnly Cookie
         const response = await axios.post(
-          "https://clinic-management-system-production-2598.up.railway.app/api/Auth/login",
+          // "https://clinic-management-system-production-2598.up.railway.app/api/Auth/login",
+          "https://localhost:7205/api/Auth/login",
+
           {
             email: this.email,
             password: this.password,
@@ -154,8 +156,8 @@ export default {
           admin: "admin-dashboard",
           doctor: "doctor-dashboard",
           receptionist: "receptionist-dashboard",
-          patient: "patient-dashboard",
-        }[normalized] || "patient-dashboard";
+          patient: "patient-home",
+        }[normalized] || "patient-home";
 
         this.$router.replace({ name: target });
       } catch (err) {

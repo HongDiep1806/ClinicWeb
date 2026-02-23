@@ -97,23 +97,32 @@ export const useAuthStore = defineStore("auth", {
   },
 
   actions: {
-   decodeToken(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    decodeToken(token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
 
-    this.user = {
-      userId: payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
-      fullName: payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
-      email: payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"],
-      role: payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]?.toLowerCase(),
-    };
-
-  } catch (err) {
-    console.error("Decode token error:", err);
-    this.user = {};
-  }
-}
-,
+        this.user = {
+          userId:
+            payload[
+              "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+            ],
+          fullName:
+            payload[
+              "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+            ],
+          email:
+            payload[
+              "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+            ],
+          role: payload[
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ]?.toLowerCase(),
+        };
+      } catch (err) {
+        console.error("Decode token error:", err);
+        this.user = {};
+      }
+    },
     restoreSession() {
       const stored = localStorage.getItem("auth");
       if (stored) {
@@ -138,7 +147,8 @@ export const useAuthStore = defineStore("auth", {
     async logout() {
       try {
         await axios.post(
-          "https://clinic-management-system-production-2598.up.railway.app/api/Auth/logout",
+          // "https://clinic-management-system-production-2598.up.railway.app/api/Auth/logout",
+          "https://localhost:7205/api/Auth/logout",
           {},
           { withCredentials: true }
         );
@@ -161,7 +171,9 @@ export const useAuthStore = defineStore("auth", {
     async refreshAccessToken() {
       try {
         const res = await axios.post(
-          "https://clinic-management-system-production-2598.up.railway.app/api/Auth/refresh",
+          // "https://clinic-management-system-production-2598.up.railway.app/api/Auth/refresh",
+          "https://localhost:7205/api/Auth/refresh",
+
           {},
           { withCredentials: true }
         );

@@ -15,6 +15,10 @@ export const getDoctorsByWeekday = (weekday) =>
   axiosInstance.get(`/Schedule/doctors-by-weekday/${weekday}`);
 export const updateAppointmentStatus = (body) =>
   axiosInstance.put("/Appointment/update-status", body);
+export const getPatientAppointments = (patientId) =>
+  axiosInstance.get("/Appointment/patient-appointments", {
+    params: { patientId }
+  });
 
 
 

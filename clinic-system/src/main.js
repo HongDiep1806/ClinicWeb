@@ -81,7 +81,16 @@ axios.defaults.withCredentials = true;
 if (auth.token && auth.isTokenExpired) {
   auth.refreshAccessToken();
 }
+if (!localStorage.getItem("sidebar")) {
+  localStorage.setItem("sidebar", "sidebar4");
+}
 
 applyTheme();
+router.afterEach(() => {
+  setTimeout(() => {
+    applyTheme();
+  }, 100);
+});
+
 
 app.mount("#app");

@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "../stores/auth"; // ✅ Thêm dòng này
+import { useAuthStore } from "../stores/auth";
 import HomeView from "../views/HomeView.vue";
 import Login from "../views/Login.vue";
 import PatientDashboard from "../views/PatientDashboard.vue";
 import DoctorDashboard from "../views/DoctorDashboard.vue";
-import PatientAppointments from "../views/PatientAppointments.vue";
+// import PatientAppointments from "../views/PatientAppointment.vue";
 import Doctors from "../views/Doctors.vue";
 import AddDoctor from "../views/AddDoctor.vue";
 import DoctorSchedule from "../views/DoctorSchedule.vue";
@@ -19,6 +19,9 @@ import Staff from "../views/Staff.vue";
 import AddStaff from "../views/AddStaff.vue";
 import EditStaff from "../views/EditStaff.vue";
 import Profile from "../views/Profile.vue";
+// 
+import Home from "../views/patients/Home.vue";
+import PatientAppointments from "../views/patients/PatientAppointments.vue";
 
 // ================== CẤU HÌNH ROUTES ==================
 const routes = [
@@ -34,34 +37,28 @@ const routes = [
     component: Login,
   },
   {
-    path: "/patient-dashboard",
-    name: "patient-dashboard",
-    component: PatientDashboard,
-    meta: { requiresAuth: true, allowRoles: ["patient"] },
-  },
-  {
     path: "/doctor-dashboard",
     name: "doctor-dashboard",
     component: DoctorDashboard,
     meta: { requiresAuth: true, allowRoles: ["doctor"] },
   },
-  {
-    path: "/patient-appointments",
-    name: "patient-appointments",
-    component: PatientAppointments,
-    meta: { requiresAuth: true },
-  },
+  // {
+  //   path: "/patient-appointments",
+  //   name: "patient-appointments",
+  //   component: PatientAppointments,
+  //   meta: { requiresAuth: true },
+  // },
   {
     path: "/doctors",
     name: "doctors",
     component: Doctors,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/add-doctor",
     name: "add-doctor",
     component: AddDoctor,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/doctor-schedule",
@@ -135,6 +132,18 @@ const routes = [
   component: Profile,
   meta: { requiresAuth: true },
 },
+{
+  path: "/patient/home",
+  name: "patient-home",
+  component: Home,
+  meta: { requiresAuth: true, allowRoles: ["patient"] },
+},
+{
+  path: "/patient/appointments",
+  name: "patient-appointments",
+  component: PatientAppointments,
+  meta: { requiresAuth: true, allowRoles: ["patient"] },
+},
 
 
 
@@ -172,10 +181,11 @@ router.beforeEach(async (to, from, next) => {
 
   // CASE 3 — Đã login → không quay lại trang login
   if (token && to.name === "login") {
-    if (role === "admin") return next({ name: "admin-dashboard" });
-    if (role === "doctor") return next({ name: "doctor-dashboard" });
-    return next({ name: "patient-dashboard" });
-  }
+  if (role === "admin") return next({ name: "admin-dashboard" });
+  if (role === "doctor") return next({ name: "doctor-dashboard" });
+  return next({ name: "patient-home" }); // sửa ở đây
+}
+
 
   // CASE 4 — Route yêu cầu login
   if (to.meta.requiresAuth && !auth.token) {
@@ -184,10 +194,11 @@ router.beforeEach(async (to, from, next) => {
 
   // CASE 5 — Kiểm tra role (chỉ khi role có tồn tại)
   if (role && to.meta.allowRoles && !to.meta.allowRoles.includes(role)) {
-    if (role === "admin") return next({ name: "admin-dashboard" });
-    if (role === "doctor") return next({ name: "doctor-dashboard" });
-    return next({ name: "patient-dashboard" });
-  }
+  if (role === "admin") return next({ name: "admin-dashboard" });
+  if (role === "doctor") return next({ name: "doctor-dashboard" });
+  return next({ name: "patient-home" }); // sửa ở đây
+}
+
 
   next();
 });

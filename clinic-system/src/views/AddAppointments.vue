@@ -300,6 +300,11 @@ export default {
       // Thứ 2 → Thứ 7
       return day - 1;
     };
+    const buildAppointmentDateTime = (dateStr, shift) => {
+      if (shift === "Morning") return `${dateStr}T08:00:00`;
+      if (shift === "Afternoon") return `${dateStr}T13:00:00`;
+      return `${dateStr}T00:00:00`;
+    };
 
 
     // const loadFilteredDoctors = async () => {
@@ -430,6 +435,8 @@ export default {
         });
 
 
+
+
         // const remainingSlots = DAILY_KPI - appointmentCount;
 
         // // 3️⃣ nếu muốn ẩn doctor full KPI
@@ -501,8 +508,7 @@ export default {
       const payload = {
         patientId: form.value.patientId,
         doctorId: form.value.doctorId,
-        date: form.value.date,        // YYYY-MM-DD
-        reason: null                  // hoặc "" nếu muốn
+        date: buildAppointmentDateTime(form.value.date, form.value.shift), reason: null
       };
 
       try {
