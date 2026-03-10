@@ -19,7 +19,12 @@ export const getPatientAppointments = (patientId) =>
   axiosInstance.get("/Appointment/patient-appointments", {
     params: { patientId }
   });
-  
+  export const getAppointmentDetail = (appointmentId) =>
+  axiosInstance.get(`/Appointment/${appointmentId}`)
+  export const getDoctorAppointments = (doctorId) =>
+  axiosInstance.get("/Appointment/doctor-appointments", {
+    params: { doctorId }
+  })
 
 
 

@@ -154,7 +154,7 @@ export default {
         const normalized = role.toLowerCase();
         const target = {
           admin: "admin-dashboard",
-          doctor: "doctor-dashboard",
+          doctor: "doctor-home",
           receptionist: "receptionist-dashboard",
           patient: "patient-home",
         }[normalized] || "patient-home";

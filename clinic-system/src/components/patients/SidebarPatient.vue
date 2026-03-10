@@ -29,11 +29,7 @@
             <ul>
               <!-- Dashboard -->
               <li>
-                <router-link
-                  to="/patient/home"
-                  active-class="router-active"
-                  exact-active-class="router-active"
-                >
+                <router-link to="/patient/home" active-class="router-active" exact-active-class="router-active">
                   <i class="ti ti-layout-dashboard"></i>
                   <span>Dashboard</span>
                 </router-link>
@@ -41,11 +37,7 @@
 
               <!-- Appointments -->
               <li>
-                <router-link
-                  to="/patient/appointments"
-                  active-class="router-active"
-                  exact-active-class="router-active"
-                >
+                <router-link to="/patient/appointments" active-class="router-active" exact-active-class="router-active">
                   <i class="ti ti-calendar-check"></i>
                   <span>Appointments</span>
                 </router-link>
@@ -53,11 +45,7 @@
 
               <!-- Doctors -->
               <li>
-                <router-link
-                  to="/patient/doctors"
-                  active-class="router-active"
-                  exact-active-class="router-active"
-                >
+                <router-link to="/patient/doctors" active-class="router-active" exact-active-class="router-active">
                   <i class="ti ti-stethoscope"></i>
                   <span>Doctors</span>
                 </router-link>
@@ -65,11 +53,8 @@
 
               <!-- Prescriptions -->
               <li>
-                <router-link
-                  to="/patient/prescriptions"
-                  active-class="router-active"
-                  exact-active-class="router-active"
-                >
+                <router-link to="/patient/prescriptions" active-class="router-active"
+                  exact-active-class="router-active">
                   <i class="ti ti-prescription"></i>
                   <span>Prescriptions</span>
                 </router-link>
@@ -77,11 +62,7 @@
 
               <!-- Invoices -->
               <li>
-                <router-link
-                  to="/patient/invoices"
-                  active-class="router-active"
-                  exact-active-class="router-active"
-                >
+                <router-link to="/patient/invoices" active-class="router-active" exact-active-class="router-active">
                   <i class="ti ti-star"></i>
                   <span>Invoice</span>
                 </router-link>
@@ -96,29 +77,20 @@
                 </a>
                 <ul>
                   <li>
-                    <router-link
-                      to="/patient/profile-settings"
-                      active-class="router-active"
-                      exact-active-class="router-active"
-                    >
+                    <router-link to="/patient/profile-settings" active-class="router-active"
+                      exact-active-class="router-active">
                       Profile Settings
                     </router-link>
                   </li>
                   <li>
-                    <router-link
-                      to="/patient/password-settings"
-                      active-class="router-active"
-                      exact-active-class="router-active"
-                    >
+                    <router-link to="/patient/password-settings" active-class="router-active"
+                      exact-active-class="router-active">
                       Change Password
                     </router-link>
                   </li>
                   <li>
-                    <router-link
-                      to="/patient/notifications-settings"
-                      active-class="router-active"
-                      exact-active-class="router-active"
-                    >
+                    <router-link to="/patient/notifications-settings" active-class="router-active"
+                      exact-active-class="router-active">
                       Notifications
                     </router-link>
                   </li>
@@ -149,7 +121,7 @@ export default {
     return { isSettingsRoute }
   },
   mounted() {
-    // gọi lại JS theme (GIỐNG ADMIN)
+    // gọi lại JS theme
     if (typeof window.setThemeAndSidebarTheme === "function") {
       setTimeout(() => {
         window.setThemeAndSidebarTheme()
@@ -169,7 +141,6 @@ export default {
 }
 </script>
 <style scoped>
-    /* ===== SAFE ROUTER ACTIVE (KHÔNG GÂY MINI SIDEBAR) ===== */
 .sidebar a.router-active {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 6px;
@@ -182,9 +153,7 @@ export default {
   visibility: visible !important;
 }
 
-/* ===== AUTO OPEN SUBMENU SETTINGS ===== */
-.sidebar .submenu.submenu-open > ul {
+.sidebar .submenu.submenu-open>ul {
   display: block;
 }
-
 </style>

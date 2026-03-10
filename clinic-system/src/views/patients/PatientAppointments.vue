@@ -98,7 +98,7 @@
                     </td>
                   </tr>
 
-                  <tr v-else v-for="item in filteredAppointments" :key="item.appointmentId || item.id">
+                  <tr v-else v-for="item in paginatedAppointments" :key="item.appointmentId || item.id">
                     <!-- Date & Shift -->
                     <td>
                       <div class="fw-semibold text-dark">
@@ -165,6 +165,28 @@
                   </tr>
                 </tbody>
               </table>
+              <div v-if="totalPages > 1" class="d-flex justify-content-end p-3 border-top">
+                <nav>
+                  <ul class="pagination mb-0">
+
+                    <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                      <button class="page-link" @click="currentPage--">Prev</button>
+                    </li>
+
+                    <li v-for="page in totalPages" :key="page" class="page-item"
+                      :class="{ active: currentPage === page }">
+                      <button class="page-link" @click="currentPage = page">
+                        {{ page }}
+                      </button>
+                    </li>
+
+                    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                      <button class="page-link" @click="currentPage++">Next</button>
+                    </li>
+
+                  </ul>
+                </nav>
+              </div>
             </div>
 
             <!-- Optional note -->
@@ -565,17 +587,18 @@ const getStatusBadge = (status) => {
 
 const loadDepartments = async () => {
   try {
-    const res = await getDepartments();
+    const res = await getDepartments()
 
-    departments.value = (res || [])
-      .filter(d => d.status === "Active");
+    const data = res?.data ?? res ?? []
 
-    console.log("Departments loaded:", departments.value);
+    departments.value = data.filter(
+      d => d.status === "Active"
+    )
 
   } catch (err) {
-    console.error("Error loading departments:", err);
+    console.error("Error loading departments:", err)
   }
-};
+}
 
 const filteredAppointments = computed(() => {
   const keyword = (q.value || "").trim().toLowerCase()
@@ -733,6 +756,20 @@ onMounted(async () => {
   console.log("Appointments loaded:", appointments.value) // Kiểm tra dữ liệu sau khi tải
   await loadDepartments()
   console.log("Departments loaded:", departments.value)
+})
+const currentPage = ref(1)
+const pageSize = ref(5) // mỗi trang 5 item
+const totalPages = computed(() => {
+  return Math.ceil(filteredAppointments.value.length / pageSize.value)
+})
+
+const paginatedAppointments = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredAppointments.value.slice(start, end)
+})
+watch([q, fromDate, toDate], () => {
+  currentPage.value = 1
 })
 </script>
 
