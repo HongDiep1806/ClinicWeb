@@ -27,8 +27,9 @@ import PatientDoctors from "../views/patients/PatientDoctors.vue";
 import DoctorHome from "../views/doctors/DoctorHome.vue";
 import DoctorAppointments from "../views/doctors/DoctorAppointments.vue";
 import DoctorExamine from "../views/doctors/DoctorExamine.vue";
-import DoctorPrescriptions from "../views/doctors/DoctorPrescriptions.vue";
-
+import DoctorMedicalRecordDetail from "../views/doctors/DoctorMedicalRecordDetail.vue";
+import DoctorMedicalRecords from "../views/doctors/DoctorMedicalRecords.vue";
+import DoctorProfile from "../views/doctors/DoctorProfile.vue";
 // ================== CẤU HÌNH ROUTES ==================
 const routes = [
   {
@@ -175,11 +176,30 @@ const routes = [
     meta: { requiresAuth: true, allowRoles: ["doctor"] },
   },
   {
-    path: "/doctor/prescriptions/:appointmentId",
-    name: "doctor-prescriptions",
-    component: DoctorPrescriptions,
+      path: "/doctor/edit-record/:recordId",
+      name: "doctor-edit-record",
+      component: DoctorExamine,
+      meta: { requiresAuth: true, allowRoles: ["doctor"] },
+
+  },
+  {
+    path: "/doctor/medical-records/:appointmentId",
+    name: "doctor-medical-records",
+    component: DoctorMedicalRecordDetail,
     meta: { requiresAuth: true, allowRoles: ["doctor"] },
   },
+  {
+    path: "/doctor/medical-records",
+    name: "doctor-medical-records-list",
+    component: DoctorMedicalRecords,
+    meta: { requiresAuth: true, allowRoles: ["doctor"] },
+  },
+  {
+    path: "/doctor/profile",
+    name: "doctor-profile",
+    component: DoctorProfile,
+    meta: { requiresAuth: true, allowRoles: ["doctor"] },
+  }
 ];
 
 // ================== TẠO ROUTER ==================

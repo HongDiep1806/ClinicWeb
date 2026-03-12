@@ -115,7 +115,7 @@
                     </td>
                   </tr>
 
-                  <tr v-for="item in appointments" :key="item.id">
+                  <tr v-for="item in sortedAppointments" :key="item.id">
                     <!-- Date & Shift -->
                     <td>
                       <div class="fw-semibold text-dark">
@@ -160,8 +160,8 @@
                       <button class="btn btn-sm btn-outline-primary" @click="openView(item)" data-bs-toggle="offcanvas"
                         data-bs-target="#view_details"> View </button>
 
-                      <button v-if="item.status === 'Pending' || item.status === 'Confirmed'"
-                        class="btn btn-sm btn-outline-danger ms-2" @click="openCancelModal(item)">
+                      <button v-if="item.status === 'Pending'" class="btn btn-sm btn-outline-danger ms-2"
+                        @click="openCancelModal(item)">
                         Cancel
                       </button>
                     </td>
@@ -190,7 +190,7 @@
           <!-- <span class="badge badge-soft-primary border border-primary fw-medium ms-2">
             #AP{{ selectedAppointment?.appointmentId || selectedAppointment?.id }}
           </span> -->
-           <span class="badge badge-soft-primary border pt-1 px-2 border-primary fw-medium ms-2">
+          <span class="badge badge-soft-primary border pt-1 px-2 border-primary fw-medium ms-2">
             #AP{{ selectedAppointment?.appointmentId || selectedAppointment?.id }}
           </span>
         </h5>
@@ -593,6 +593,11 @@ const cancelAppointment = async (item) => {
     showToast("Failed to cancel appointment.", "error");
   }
 };
+const sortedAppointments = computed(() => {
+  return [...appointments.value].sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  )
+})
 
 
 
@@ -611,6 +616,7 @@ onMounted(() => {
   transform: translateY(-3px);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
 }
+
 .badge-soft-primary {
   background-color: rgba(13, 110, 253, 0.1);
   color: #0d6efd;

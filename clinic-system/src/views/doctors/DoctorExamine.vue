@@ -9,12 +9,13 @@
 
             <div class="content">
 
-                <!-- HEADER -->
-
                 <div class="mb-4">
-                    <h4 class="fw-bold">Patient Examination</h4>
+                    <h4 class="fw-bold">
+                        {{ isEditMode ? "Edit Medical Record" : "Patient Examination" }}
+                    </h4>
+
                     <p class="text-muted mb-0">
-                        Complete patient consultation
+                        {{ isEditMode ? "Update patient medical record" : "Complete patient consultation" }}
                     </p>
                 </div>
 
@@ -39,7 +40,6 @@
                                     </div>
 
                                     <div>
-
                                         <div class="fw-semibold">
                                             {{ appointment.patientName }}
                                         </div>
@@ -47,7 +47,6 @@
                                         <div class="text-muted small">
                                             {{ appointment.patientPhone }}
                                         </div>
-
                                     </div>
 
                                 </div>
@@ -72,7 +71,6 @@
 
                     </div>
 
-
                     <!-- EXAMINATION -->
 
                     <div class="col-lg-8">
@@ -94,11 +92,9 @@
                                     </label>
 
                                     <textarea v-model="diagnosis" class="form-control" rows="3"
-                                        placeholder="Enter diagnosis">
-</textarea>
+                                        placeholder="Enter diagnosis"></textarea>
 
                                 </div>
-
 
                                 <!-- MEDICINE -->
 
@@ -122,15 +118,11 @@
                                     </div>
 
                                     <div class="col-md-4">
-
                                         <input v-model="dosage" class="form-control" placeholder="Dosage" />
-
                                     </div>
 
                                     <div class="col-md-2">
-
                                         <input type="number" v-model="quantity" class="form-control" />
-
                                     </div>
 
                                     <div class="col-md-2">
@@ -143,7 +135,6 @@
 
                                 </div>
 
-
                                 <!-- PRESCRIPTION TABLE -->
 
                                 <table v-if="medicines.length" class="table table-sm">
@@ -154,7 +145,7 @@
                                             <th>Medicine</th>
                                             <th>Dosage</th>
                                             <th>Qty</th>
-                                            <th></th>
+                                            <th>Action</th>
                                         </tr>
 
                                     </thead>
@@ -177,6 +168,10 @@
 
                                             <td>
 
+                                                <button class="btn btn-sm btn-warning me-1" @click="editMedicine(i)">
+                                                    Edit
+                                                </button>
+
                                                 <button class="btn btn-sm btn-danger" @click="removeMedicine(i)">
                                                     Remove
                                                 </button>
@@ -189,11 +184,17 @@
 
                                 </table>
 
+                                <!-- SUBMIT -->
 
-                                <!-- COMPLETE -->
+                                <button class="btn btn-success mt-3" @click="submitRecord" :disabled="loading">
 
-                                <button class="btn btn-success mt-3" @click="completeExamination" :disabled="loading">
-                                    {{ loading ? "Processing..." : "Complete Appointment" }}
+                                    {{ loading
+                                        ? "Processing..."
+                                        : isEditMode
+                                            ? "Update Medical Record"
+                                            : "Complete Appointment"
+                                    }}
+
                                 </button>
 
                             </div>
@@ -215,23 +216,18 @@
         </div>
 
     </div>
-    <!-- start toast -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
-        <div id="liveToast" class="toast align-items-center text-bg-success border-0" role="alert">
+    <div class="position-fixed top-0 end-0 p-3" style="z-index:9999">
+        <div id="appToast" class="toast align-items-center text-bg-success border-0" role="alert">
             <div class="d-flex">
-                <div class="toast-body">
-                    {{ toastMessage }}
+                <div class="toast-body" id="toastMessage">
+                    Success
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast">
-                </button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
-    <!-- end toast -->
 
 </template>
-
-
 <script setup>
 
 import { ref, onMounted } from "vue"
@@ -240,10 +236,42 @@ import { useRoute, useRouter } from "vue-router"
 import NavbarDoctor from "../../components/doctors/NavbarDoctor.vue"
 import SidebarDoctor from "../../components/doctors/SidebarDoctor.vue"
 
-import { getAppointmentDetail, updateAppointmentStatus } from "../../services/appointmentService"
-import { createMedicalRecord } from "../../services/medicalRecordService"
-import { createPrescription } from "../../services/prescriptionService"
+import {
+    getAppointmentDetail,
+    updateAppointmentStatus
+} from "../../services/appointmentService"
+
+import {
+    createMedicalRecord,
+    getMedicalRecordById,
+    updateMedicalRecord
+} from "../../services/medicalRecordService"
+
+import {
+    createPrescription,
+    deletePrescription
+} from "../../services/prescriptionService"
+
 import { getAllMedicines } from "../../services/medicineService"
+const showToast = (message, type = "success") => {
+
+    const toastEl = document.getElementById("appToast")
+    const toastBody = document.getElementById("toastMessage")
+
+    toastBody.innerText = message
+
+    toastEl.classList.remove(
+        "text-bg-success",
+        "text-bg-danger",
+        "text-bg-warning"
+    )
+
+    toastEl.classList.add(`text-bg-${type}`)
+
+    const toast = new bootstrap.Toast(toastEl)
+    toast.show()
+
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -260,82 +288,154 @@ const dosage = ref("")
 const quantity = ref(1)
 
 const medicines = ref([])
+const removedPrescriptions = ref([])
+const editingPrescriptionId = ref(null)
+
+const recordId = ref(null)
+const isEditMode = ref(false)
 
 const loading = ref(false)
-const toastMessage = ref("")
-const showToast = (message, type = "success") => {
-
-    toastMessage.value = message
-
-    const toastEl = document.getElementById("liveToast")
-
-    toastEl.classList.remove(
-        "text-bg-success",
-        "text-bg-danger",
-        "text-bg-warning"
-    )
-
-    toastEl.classList.add(`text-bg-${type}`)
-
-    const toast = new bootstrap.Toast(toastEl)
-    toast.show()
-}
 
 const loadAppointment = async () => {
+
     try {
+
         const id = route.params.id
+        if (!id) return
+
         const res = await getAppointmentDetail(id)
         appointment.value = res.data
+
     } catch (err) {
+
         console.error("Load appointment error", err)
+
     }
+
 }
 
 const loadMedicines = async () => {
+
     try {
+
         const res = await getAllMedicines()
         medicinesList.value = res.data
+
     } catch (err) {
+
         console.error("Load medicines error", err)
+
     }
+
+}
+
+const loadMedicalRecord = async () => {
+
+    try {
+
+        const res = await getMedicalRecordById(recordId.value)
+
+        const record = res.data
+
+        diagnosis.value = record.diagnosisDescription
+        notes.value = record.note
+
+        appointment.value = record.appointment
+
+        medicines.value = record.prescriptions.map(p => ({
+            prescriptionId: p.prescriptionId,
+            medicineId: p.medicineId,
+            dosage: p.dosage,
+            quantity: p.quantity
+        }))
+
+    } catch (err) {
+
+        console.error("Load record error", err)
+
+    }
+
 }
 
 const addMedicine = () => {
 
     if (!selectedMedicine.value) {
-        alert("Please select medicine")
+        showToast("Please select medicine", "warning")
         return
     }
 
     if (!dosage.value) {
-        alert("Please enter dosage")
+        showToast("Please enter dosage", "warning")
         return
     }
 
+    if (!editingPrescriptionId.value) {
+
+        const exists = medicines.value.some(
+            m => m.medicineId === selectedMedicine.value
+        )
+
+        if (exists) {
+            showToast("Medicine already added", "warning")
+            return
+        }
+
+    }
+
+    if (editingPrescriptionId.value) {
+        removedPrescriptions.value.push(editingPrescriptionId.value)
+    }
+
     medicines.value.push({
+        prescriptionId: null,
         medicineId: selectedMedicine.value,
         dosage: dosage.value,
         quantity: quantity.value
     })
 
+    editingPrescriptionId.value = null
     selectedMedicine.value = null
     dosage.value = ""
     quantity.value = 1
+
 }
 
-const removeMedicine = (index) => {
+const editMedicine = (index) => {
+
+    const m = medicines.value[index]
+
+    editingPrescriptionId.value = m.prescriptionId || null
+
+    selectedMedicine.value = m.medicineId
+    dosage.value = m.dosage
+    quantity.value = m.quantity
+
     medicines.value.splice(index, 1)
+
+}
+const removeMedicine = (index) => {
+
+    const m = medicines.value[index]
+
+    if (m.prescriptionId) {
+        removedPrescriptions.value.push(m.prescriptionId)
+    }
+
+    medicines.value.splice(index, 1)
+
 }
 
 const getMedicineName = (id) => {
+
     const m = medicinesList.value.find(x => x.medicineId === id)
+
     return m ? m.name : ""
+
 }
 
-const completeExamination = async () => {
-
-    if (!diagnosis.value) {
-        showToast("Diagnosis is required", "warning")
+const submitRecord = async () => {
+    if (!diagnosis.value.trim()) {
+        showToast("Please enter diagnosis", "warning")
         return
     }
 
@@ -348,71 +448,141 @@ const completeExamination = async () => {
 
         loading.value = true
 
-        const recordRes = await createMedicalRecord({
-            AppointmentId: appointment.value.appointmentId,
-            DiagnosisDescription: diagnosis.value,
-            Treatment: "",
-            Note: notes.value || ""
-        })
-        console.log("MedicalRecord Response:", recordRes.data)
+        let currentRecordId = recordId.value
 
-        const recordId =
-            recordRes.data.recordId ||
-            recordRes.data.id ||
-            recordRes.data.medicalRecordId
+        /* UPDATE MODE */
 
-        for (const m of medicines.value) {
+        if (isEditMode.value) {
 
-            await createPrescription({
-                RecordId: recordId,
-                MedicineId: m.medicineId,
-                Dosage: m.dosage,
-                Quantity: m.quantity
+            await updateMedicalRecord(currentRecordId, {
+
+                DiagnosisDescription: diagnosis.value,
+                Treatment: "",
+                Note: notes.value || ""
+
             })
 
         }
-        await updateAppointmentStatus({
-            appointmentId: appointment.value.appointmentId,
-            status: "Completed"
-        })
 
-        showToast("Examination completed successfully", "success")
+        /* CREATE MODE */
 
-        router.push("/doctor/appointments")
+        else {
+
+            const recordRes = await createMedicalRecord({
+
+                AppointmentId: appointment.value.appointmentId,
+                DiagnosisDescription: diagnosis.value,
+                Treatment: "",
+                Note: notes.value || ""
+
+            })
+
+            currentRecordId =
+                recordRes.data.recordId ||
+                recordRes.data.id ||
+                recordRes.data.medicalRecordId
+
+        }
+
+        /* DELETE REMOVED PRESCRIPTIONS */
+
+        for (const id of removedPrescriptions.value) {
+
+            await deletePrescription(id)
+
+        }
+
+        /* SAVE PRESCRIPTIONS */
+
+        for (const m of medicines.value) {
+
+            if (!m.prescriptionId) {
+
+                await createPrescription({
+
+                    RecordId: currentRecordId,
+                    MedicineId: m.medicineId,
+                    Dosage: m.dosage,
+                    Quantity: m.quantity
+
+                })
+
+            }
+
+        }
+
+        /* COMPLETE APPOINTMENT */
+
+        if (!isEditMode.value) {
+
+            await updateAppointmentStatus({
+
+                appointmentId: appointment.value.appointmentId,
+                status: "Completed"
+
+            })
+
+        }
+
+        showToast("Medical record saved successfully", "success")
+
+        setTimeout(() => {
+            router.back()
+        }, 1000)
 
     } catch (err) {
 
-        console.error("Complete examination error", err)
-
-        showToast("Failed to complete examination", "danger")
+        console.error("Save record error", err)
+        showToast("Failed to save medical record", "danger")
 
     } finally {
+
         loading.value = false
+        removedPrescriptions.value = []
+
     }
+
 }
 
 const formatDate = (date) => {
+
     return new Date(date).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
         year: "numeric"
     })
+
 }
 
 const formatTime = (date) => {
+
     return new Date(date).toLocaleTimeString("en-GB", {
         hour: "2-digit",
         minute: "2-digit"
     })
+
 }
 
-onMounted(() => {
-    loadAppointment()
-    loadMedicines()
+onMounted(async () => {
+
+    if (route.params.recordId) {
+
+        isEditMode.value = true
+        recordId.value = route.params.recordId
+
+        await loadMedicalRecord()
+
+    } else {
+
+        await loadAppointment()
+
+    }
+
+    await loadMedicines()
+
 })
 
 </script>
-
 
 <style scoped>
 .avatar {

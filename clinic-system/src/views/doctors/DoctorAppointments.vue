@@ -312,9 +312,9 @@
                     </p>
                     <div v-if="selectedAppointment?.status === 'Completed'" class="mt-3">
 
-                        <button class="btn btn-success w-100" @click="goToPrescription">
+                        <button class="btn btn-success w-100" data-bs-dismiss="offcanvas" @click="goToPrescription">
                             <i class="ti ti-pill me-1"></i>
-                            View Prescriptions
+                            View Medical Record
                         </button>
 
                     </div>
@@ -382,7 +382,7 @@ const goToPrescription = async () => {
 
         const recordId = record.medicalRecordId
 
-        router.push(`/doctor/prescriptions/${appointmentId}`)
+        router.push(`/doctor/medical-records/${appointmentId}`)
     }
     catch (err) {
 

@@ -1,5 +1,4 @@
 <template>
-  <!-- Topbar Start -->
   <header class="navbar-header">
     <div class="page-container topbar-menu">
 
@@ -27,135 +26,38 @@
 
         </router-link>
 
-        <!-- Sidebar mobile -->
+        <!-- Mobile sidebar -->
         <a id="mobile_btn" class="mobile-btn" href="#sidebar">
           <i class="ti ti-menu-deep fs-24"></i>
         </a>
 
+        <!-- Sidebar toggle -->
         <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn2">
           <i class="ti ti-arrow-right"></i>
         </button>
-
-        <!-- Search -->
-        <div class="me-auto d-flex align-items-center header-search d-lg-flex d-none">
-
-          <div class="input-icon-start position-relative me-2">
-
-            <span class="input-icon-addon">
-              <i class="ti ti-search"></i>
-            </span>
-
-            <input
-              type="text"
-              class="form-control shadow-sm"
-              placeholder="Search patient..."
-            />
-
-          </div>
-
-        </div>
 
       </div>
 
       <!-- RIGHT -->
       <div class="d-flex align-items-center">
 
-        <!-- Mobile search -->
-        <div class="header-item d-flex d-lg-none me-2">
-          <button
-            class="topbar-link btn btn-icon"
-            data-bs-toggle="modal"
-            data-bs-target="#searchModal"
-          >
-            <i class="ti ti-search fs-16"></i>
-          </button>
-        </div>
-
         <!-- Appointments -->
-        <div class="header-item">
+        <div class="header-item me-2">
 
-          <router-link
-            to="/doctor/appointments"
-            class="btn topbar-link"
-          >
+          <router-link to="/doctor/appointments" class="btn topbar-link">
             <i class="ti ti-calendar-due"></i>
           </router-link>
-
-        </div>
-
-        <!-- Profile settings -->
-        <div class="header-item">
-
-          <router-link
-            to="/doctor/profile"
-            class="btn topbar-link"
-          >
-            <i class="ti ti-settings-2"></i>
-          </router-link>
-
-        </div>
-
-        <!-- Dark mode -->
-        <div class="header-item d-none d-sm-flex me-2">
-
-          <button
-            class="topbar-link btn btn-icon"
-            id="light-dark-mode"
-            type="button"
-          >
-            <i class="ti ti-moon fs-16"></i>
-          </button>
-
-        </div>
-
-        <!-- Notifications -->
-        <div class="header-item">
-
-          <div class="dropdown me-3">
-
-            <button
-              class="topbar-link btn btn-icon dropdown-toggle drop-arrow-none"
-              data-bs-toggle="dropdown"
-            >
-              <i class="ti ti-bell-check fs-16 animate-ring"></i>
-              <span class="notification-badge"></span>
-            </button>
-
-            <div
-              class="dropdown-menu dropdown-menu-end dropdown-menu-lg p-0"
-              style="min-height: 200px"
-            >
-
-              <div class="p-2 border-bottom">
-                <h6 class="m-0 fs-16 fw-semibold">
-                  Notifications
-                </h6>
-              </div>
-
-              <div class="p-3 text-center text-muted">
-                No new notifications
-              </div>
-
-            </div>
-
-          </div>
 
         </div>
 
         <!-- USER -->
         <div class="dropdown profile-dropdown d-flex align-items-center">
 
-          <a
-            href="javascript:void(0);"
-            class="dropdown-toggle drop-arrow-none d-flex align-items-center"
-            data-bs-toggle="dropdown"
-          >
+          <a href="javascript:void(0);" class="dropdown-toggle drop-arrow-none d-flex align-items-center"
+            data-bs-toggle="dropdown">
 
-            <div
-              v-if="authStore.user?.fullName"
-              class="avatar-circle-small me-2"
-              :style="{ backgroundColor: getColor(authStore.user.fullName) }"
-            >
+            <div v-if="authStore.user?.fullName" class="avatar-circle-small me-2"
+              :style="{ backgroundColor: getColor(authStore.user.fullName) }">
               {{ getInitial(authStore.user.fullName) }}
             </div>
 
@@ -170,10 +72,7 @@
 
             <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
 
-              <div
-                class="avatar-circle-small me-2"
-                :style="{ backgroundColor: getColor(authStore.user.fullName) }"
-              >
+              <div class="avatar-circle-small me-2" :style="{ backgroundColor: getColor(authStore.user.fullName) }">
                 {{ getInitial(authStore.user.fullName) }}
               </div>
 
@@ -189,20 +88,14 @@
 
             </div>
 
-            <router-link
-              class="dropdown-item"
-              to="/doctor/profile"
-            >
+            <router-link class="dropdown-item" to="/doctor/profile">
               <i class="ti ti-user-circle me-1"></i>
               Profile
             </router-link>
 
             <div class="pt-2 mt-2 border-top">
 
-              <button
-                class="dropdown-item text-danger"
-                @click="handleLogout"
-              >
+              <button class="dropdown-item text-danger" @click="handleLogout">
                 <i class="ti ti-logout me-1"></i>
                 Log Out
               </button>
@@ -220,7 +113,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue"
+
+import { computed, onMounted, ref } from "vue"
 import { useAuthStore } from "../../stores/auth"
 import { useRouter } from "vue-router"
 
@@ -266,24 +160,40 @@ const handleLogout = async () => {
 
 }
 
-/* THEME */
+/* DARK MODE */
+
+const isDark = ref(false)
+
+const toggleDarkMode = () => {
+
+  document.body.classList.toggle("dark")
+
+  isDark.value = document.body.classList.contains("dark")
+
+  localStorage.setItem(
+    "theme",
+    isDark.value ? "dark" : "light"
+  )
+
+}
+
+/* LOAD THEME */
 
 onMounted(() => {
 
-  setTimeout(() => {
+  const savedTheme = localStorage.getItem("theme")
 
-    if (window.setThemeAndSidebarTheme) {
-      window.setThemeAndSidebarTheme()
-    }
-
-  }, 150)
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark")
+    isDark.value = true
+  }
 
 })
+
 </script>
 
 <style>
-
-.profile-dropdown > a {
+.profile-dropdown>a {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -311,5 +221,4 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 }
-
 </style>

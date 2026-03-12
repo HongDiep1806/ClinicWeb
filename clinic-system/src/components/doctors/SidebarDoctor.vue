@@ -61,20 +61,11 @@
                                     <span>Appointments</span>
                                 </router-link>
                             </li>
-
                             <li>
-                                <router-link to="/doctor/patients" active-class="router-active"
-                                    exact-active-class="router-active">
-                                    <i class="ti ti-users"></i>
-                                    <span>Patients</span>
-                                </router-link>
-                            </li>
-
-                            <li>
-                                <router-link to="/doctor/prescriptions" active-class="router-active"
+                                <router-link to="/doctor/medical-records" active-class="router-active"
                                     exact-active-class="router-active">
                                     <i class="ti ti-prescription"></i>
-                                    <span>Prescriptions</span>
+                                    <span>Medical Records</span>
                                 </router-link>
                             </li>
 
@@ -97,7 +88,7 @@
                                 </router-link>
                             </li>
 
-                            <li class="submenu" :class="{ 'submenu-open': isSettingsRoute }">
+                            <!-- <li class="submenu" :class="{ 'submenu-open': isSettingsRoute }">
                                 <a href="javascript:void(0);">
                                     <i class="ti ti-settings"></i>
                                     <span>Account Settings</span>
@@ -120,7 +111,7 @@
                                     </li>
                                 </ul>
 
-                            </li>
+                            </li> -->
 
                         </ul>
                     </li>

@@ -156,8 +156,8 @@
                         View
                       </button>
 
-                      <button v-if="item.status === 'Pending' || item.status === 'Confirmed'"
-                        class="btn btn-sm btn-outline-danger" @click="openCancelModal(item)">
+                      <button v-if="item.status === 'Pending'" class="btn btn-sm btn-outline-danger"
+                        @click="openCancelModal(item)">
                         Cancel
                       </button>
 
@@ -717,7 +717,7 @@ const buildDateTime = () => {
     base.setHours(13, 0, 0)
   }
 
-  return base.toISOString()
+  return base
 }
 const submitCreate = async () => {
   if (!form.value.departmentId || !form.value.date || !form.value.shift || !form.value.doctorId) {

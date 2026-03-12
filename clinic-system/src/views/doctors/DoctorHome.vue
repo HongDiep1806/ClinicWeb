@@ -90,6 +90,33 @@
           </div>
 
         </div>
+        <div class="card shadow-sm mt-3">
+          <div class="card-header">
+            <h6 class="fw-bold mb-0">This Week Schedule</h6>
+          </div>
+
+          <div class="card-body">
+
+            <div class="week-grid">
+
+              <div v-for="d in weekDays" :class="['week-day', { today: isToday(d) }]">
+
+                <div class="day-name">
+                  {{ d.slice(0, 3) }}
+                </div>
+
+                <div class="shift-badge" :class="getShiftColor(scheduleMap[d])">
+
+                  {{ scheduleMap[d] || "Off" }}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
 
         <!-- UPCOMING + CHART -->
         <div class="row mt-3">
@@ -135,7 +162,8 @@
 
                 </div>
 
-                <router-link :to="`/doctor/examine/${nextAppointment.appointmentId}`" class="btn btn-primary w-100">
+                <router-link v-if="nextAppointment?.status === 'Confirmed'"
+                  :to="`/doctor/examine/${nextAppointment.appointmentId}`" class="btn btn-primary w-100">
                   Start Appointment
                 </router-link>
 
@@ -220,7 +248,8 @@
 
               <div>
 
-                <router-link :to="`/doctor/examine/${a.appointmentId}`" class="btn btn-sm btn-outline-primary">
+                <router-link v-if="a.status === 'Confirmed'" :to="`/doctor/examine/${a.appointmentId}`"
+                  class="btn btn-sm btn-outline-primary">
                   Examine
                 </router-link>
 
@@ -256,6 +285,53 @@ import SidebarDoctor from "../../components/doctors/SidebarDoctor.vue"
 
 import { useAuthStore } from "../../stores/auth"
 import { getDoctorAppointments } from "../../services/appointmentService"
+import { getScheduleByDoctor } from "../../services/scheduleService"
+const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+const scheduleMap = ref({})
+
+const loadSchedule = async () => {
+
+  const doctorId = authStore.user?.userId
+  const res = await getScheduleByDoctor(doctorId)
+
+  const data = res.data || res
+
+  const map = {}
+
+  data.forEach(s => {
+    map[s.dayOfWeek] =
+      s.startTime.startsWith("08") ? "Morning" : "Afternoon"
+  })
+
+  scheduleMap.value = map
+}
+const getShiftColor = (shift) => {
+
+  if (shift === "Morning")
+    return "morning"
+
+  if (shift === "Afternoon")
+    return "afternoon"
+
+  return "off"
+
+}
+const isToday = (day) => {
+
+  const todayIndex = new Date().getDay()
+
+  const map = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6
+  }
+
+  return map[day] === todayIndex
+}
 
 const chartRef = ref(null)
 
@@ -313,9 +389,25 @@ const loadDashboard = async () => {
     totalPatients.value =
       new Set(data.map(a => a.patientId)).size
 
-    nextAppointment.value = todayList.find(a => a.status === "Pending") || null
+    nextAppointment.value = todayList.find(a => a.status === "Confirmed") || null
+    const now = new Date()
 
-    initChart(data)
+    const firstDay = new Date(now)
+    firstDay.setDate(now.getDate() - now.getDay() + 1)
+    firstDay.setHours(0, 0, 0, 0)
+
+    const lastDay = new Date(firstDay)
+    lastDay.setDate(firstDay.getDate() + 6)
+    lastDay.setHours(23, 59, 59, 999)
+
+    const weekAppointments = data.filter(a => {
+
+      const d = new Date(a.date)
+
+      return d >= firstDay && d <= lastDay
+
+    })
+    initChart(weekAppointments)
   }
   catch (err) {
 
@@ -342,10 +434,10 @@ const initChart = (data) => {
   })
 
   const options = {
-
     chart: {
       type: "bar",
-      height: 280
+      height: 280,
+      toolbar: { show: true }
     },
 
     series: [{
@@ -357,12 +449,39 @@ const initChart = (data) => {
       categories: week
     },
 
+    plotOptions: {
+      bar: {
+        borderRadius: 6,
+        columnWidth: "40%"
+      }
+    },
+
     colors: ["#3b82f6"],
+
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "vertical",
+        gradientToColors: ["#60a5fa"],
+        opacityFrom: 0.9,
+        opacityTo: 0.7
+      }
+    },
+
+    grid: {
+      strokeDashArray: 4,
+      borderColor: "#f1f5f9"
+    },
+
+    yaxis: {
+      min: 0,
+      decimalsInFloat: 0
+    },
 
     dataLabels: {
       enabled: false
     }
-
   }
 
   if (chart) {
@@ -378,11 +497,61 @@ const initChart = (data) => {
 
 }
 
-onMounted(loadDashboard)
-
+onMounted(() => {
+  loadDashboard()
+  loadSchedule()
+})
 </script>
 
 <style scoped>
+.week-day.today {
+  border: 2px solid #4e73df;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+
+.week-day {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  transition: .2s;
+}
+
+.week-day:hover {
+  transform: translateY(-2px);
+}
+
+.day-name {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.shift-badge {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.morning {
+  background: #e7f1ff;
+  color: #2563eb;
+}
+
+.afternoon {
+  background: #fff3cd;
+  color: #d97706;
+}
+
+.off {
+  background: #f1f1f1;
+  color: #6b7280;
+}
+
 .stat-icon {
   width: 50px;
   height: 50px;
