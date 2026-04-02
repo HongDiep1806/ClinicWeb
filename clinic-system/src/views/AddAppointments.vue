@@ -363,16 +363,23 @@ export default {
     //   }
     // };
     const loadFilteredDoctors = async () => {
+      console.log("FORM:", {
+        departmentId: form.value.departmentId,
+        date: form.value.date,
+        shift: form.value.shift
+      });
       if (!form.value.departmentId || !form.value.date || !form.value.shift) {
         doctors.value = [];
         return;
       }
 
       const weekdayIndex = getWeekday(form.value.date);
+      console.log("weekdayIndex:", weekdayIndex);
       isWeekend.value = false;
 
       const res = await getDoctorsByWeekday(weekdayIndex);
       const doctorList = res.data || [];
+      console.log("Doctors from API:", doctorList);
 
       const weekdayNames = [
         "Monday",
@@ -385,6 +392,7 @@ export default {
       ];
 
       const dayName = weekdayNames[weekdayIndex];
+      console.log("dayName:", dayName);
 
       const matchedDoctors = [];
 
@@ -392,14 +400,36 @@ export default {
         if (doc.departmentId != form.value.departmentId) continue;
 
         // 1️⃣ check schedule theo ngày + ca
-        const schRes = await getScheduleByDoctor(doc.userId);
-        const schedules = schRes.data || [];
+        console.log("Checking doctor:", doc.fullName, doc.userId);
 
+        if (doc.departmentId != form.value.departmentId) {
+          console.log("❌ Department mismatch");
+          continue;
+        }
+
+        let schedules = [];
+
+        try {
+          const schRes = await getScheduleByDoctor(doc.userId);
+          schedules = schRes.data || [];
+        } catch (err) {
+          console.error("Schedule API error for doctor:", doc.userId, err);
+          continue;
+        }
+
+        console.log("Schedules:", schedules);
+
+        // 2️⃣ check schedule theo ngày + ca
         const matchedSchedule = schedules.find(s => {
           const start = s.startTime.substring(0, 5);
           const shift =
             start === "08:00" ? "Morning" :
               start === "13:00" ? "Afternoon" : "";
+          console.log("Schedule item:", {
+            apiDay: s.dayOfWeek,
+            expected: dayName,
+            start: s.startTime
+          });
 
           return (
             s.dayOfWeek === dayName &&
@@ -415,8 +445,8 @@ export default {
           if (a.status === "Cancelled") return false;
 
           // cùng ngày
-          if (a.date !== form.value.date) return false;
-
+          const apptDate = a.date.substring(0, 10);
+          if (apptDate !== form.value.date) return false;
           // cùng ca
           const hour = Number(a.time?.substring(0, 2) || 0);
           const apptShift = hour < 12 ? "Morning" : "Afternoon";
@@ -510,6 +540,41 @@ export default {
         doctorId: form.value.doctorId,
         date: buildAppointmentDateTime(form.value.date, form.value.shift), reason: null
       };
+      const now = new Date()
+
+      const apptDate = new Date(buildAppointmentDateTime(form.value.date, form.value.shift))
+
+      // FIX timezone
+      apptDate.setMinutes(apptDate.getMinutes() - apptDate.getTimezoneOffset())
+
+      let shiftEnd
+
+      const hour = apptDate.getHours()
+
+      if (hour === 8) {
+        shiftEnd = new Date(apptDate)
+        shiftEnd.setHours(12, 0, 0, 0)
+      } else {
+        shiftEnd = new Date(apptDate)
+        shiftEnd.setHours(17, 0, 0, 0)
+      }
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      const selectedDate = new Date(form.value.date)
+      selectedDate.setHours(0, 0, 0, 0)
+
+      if (selectedDate < today) {
+        toast.error("Cannot book past date")
+        return
+      }
+
+      const isToday = selectedDate.getTime() === today.getTime()
+
+      if (isToday && now > shiftEnd) {
+        toast.error("Cannot book past shift")
+        return
+      }
 
       try {
         await bookAppointment(payload);
@@ -517,7 +582,27 @@ export default {
         router.back();
       } catch (err) {
         console.error(err);
-        toast.error("Failed to create appointment");
+
+        const res = err?.response?.data;
+
+        const text =
+          typeof res === "string"
+            ? res.toLowerCase()
+            : JSON.stringify(res).toLowerCase();
+
+        let message = "Failed to create appointment";
+
+        if (text.includes("already")) {
+          message = "This patient already booked this day";
+        }
+        else if (text.includes("not scheduled")) {
+          message = "Doctor not working this shift";
+        }
+        else if (res?.message) {
+          message = res.message;
+        }
+
+        toast.error(message);
       }
     };
 

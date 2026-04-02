@@ -12,3 +12,5 @@ export const updateMedicalRecord = (id, body) =>
   axiosInstance.put(`/MedicalRecords/${id}`, body)
 export const getDoctorMedicalRecords = () =>
   axiosInstance.get("/MedicalRecords/doctor/my-records")
+export const getPatientMedicalRecords = () =>
+  axiosInstance.get("/MedicalRecords/my-medical-records")

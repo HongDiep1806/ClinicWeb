@@ -15,7 +15,7 @@
             </p>
           </div>
 
-          <button class="btn btn-primary" @click="router.push('/patient/book-appointment')">
+          <button class="btn btn-primary" @click="router.push('/patient/add-appointment')">
             <i class="ti ti-plus me-1"></i>
             New Appointment
           </button>
@@ -161,9 +161,7 @@
                         data-bs-target="#view_details"> View </button>
 
                       <button v-if="item.status === 'Pending'" class="btn btn-sm btn-outline-danger ms-2"
-                        @click="openCancelModal(item)">
-                        Cancel
-                      </button>
+                        @click="openCancelModal(item)"> Cancel </button>
                     </td>
                   </tr>
                 </tbody>
@@ -253,6 +251,12 @@
           <div class="p-3 bg-light rounded-3 text-muted fs-13 border-dashed">
             {{ selectedAppointment?.reason || 'No additional notes provided.' }}
           </div>
+        </div>
+        <div class="px-3 pb-3 mt-3 border-top pt-3" v-if="selectedAppointment?.status === 'Completed'">
+          <button class="btn btn-primary w-100" @click="goToPrescription(selectedAppointment?.appointmentId)">
+            <i class="ti ti-prescription me-1"></i>
+            View Prescription
+          </button>
         </div>
       </div>
     </div>
@@ -351,8 +355,16 @@
             Keep
           </button>
 
-          <button class="btn btn-danger" @click="confirmCancel">
-            Yes, Cancel
+          <button class="btn btn-danger" @click="confirmCancel" :disabled="isCancelling">
+
+            <span v-if="isCancelling">
+              <span class="spinner-border spinner-border-sm me-1"></span>
+              Cancelling...
+            </span>
+
+            <span v-else>
+              Yes, Cancel
+            </span>
           </button>
         </div>
 
@@ -402,6 +414,9 @@ const upcomingAppointment = ref(null)
 const lastVisit = ref(null)
 
 /* ================= LOAD DATA ================= */
+const isCancelling = ref(false)
+
+
 
 const loadAppointments = async () => {
   try {
@@ -412,6 +427,8 @@ const loadAppointments = async () => {
     const data = res.data || []
 
     appointments.value = data
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 10)
     totalAppointments.value = data.length
 
     // Upcoming
@@ -442,6 +459,22 @@ const loadAppointments = async () => {
   } catch (err) {
     console.error("Load appointments error:", err)
   }
+}
+const goToPrescription = (appointmentId) => {
+  if (!appointmentId) return
+
+  // 🔥 đóng offcanvas (tránh màn xám)
+  const offcanvasEl = document.getElementById("view_details")
+  const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl)
+
+  if (offcanvas) {
+    offcanvas.hide()
+  }
+
+  // 🔥 chờ animation xong rồi mới route
+  setTimeout(() => {
+    router.push(`/patient/prescriptions/${appointmentId}`)
+  }, 200)
 }
 const getStatusBadge = (status) => {
   switch (status) {
@@ -548,6 +581,8 @@ const openCancelModal = (item) => {
 const confirmCancel = async () => {
   if (!appointmentToCancel.value) return
 
+  isCancelling.value = true
+
   try {
     await updateAppointmentStatus({
       appointmentId: appointmentToCancel.value.appointmentId,
@@ -555,12 +590,13 @@ const confirmCancel = async () => {
     })
 
     await loadAppointments()
-
     showToast("Appointment cancelled successfully!", "success")
 
   } catch (error) {
     console.error("Cancel failed:", error)
     showToast("Failed to cancel appointment.", "error")
+  } finally {
+    isCancelling.value = false
   }
 
   const modal = bootstrap.Modal.getInstance(
@@ -570,7 +606,6 @@ const confirmCancel = async () => {
 
   appointmentToCancel.value = null
 }
-
 const cancelAppointment = async (item) => {
   const confirmed = window.confirm(
     "Are you sure you want to cancel this appointment?"
@@ -594,9 +629,17 @@ const cancelAppointment = async (item) => {
   }
 };
 const sortedAppointments = computed(() => {
-  return [...appointments.value].sort(
-    (a, b) => new Date(b.date) - new Date(a.date)
-  )
+  return [...appointments.value].sort((a, b) => {
+    const createdA = new Date(a.createdAt || 0)
+    const createdB = new Date(b.createdAt || 0)
+
+    if (createdB - createdA !== 0) {
+      return createdB - createdA
+    }
+
+    // fallback nếu cùng createdAt
+    return new Date(b.date || 0) - new Date(a.date || 0)
+  })
 })
 
 

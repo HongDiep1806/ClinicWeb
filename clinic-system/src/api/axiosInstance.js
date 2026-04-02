@@ -131,7 +131,7 @@ import { useAuthStore } from "../stores/auth";
 axios.defaults.withCredentials = true;
 
 // const BASE_URL = "https://clinic-management-system-production-2598.up.railway.app/api";
-const BASE_URL = "https://localhost:7205/api";
+const BASE_URL = "https://clinic.sys/api";
 
 
 // Instance chính

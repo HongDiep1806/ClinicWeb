@@ -266,11 +266,11 @@
 
                         <span class="text-dark fw-bold">
 
-                            Dr. {{ selectedAppointment?.doctorName }}
+                            Patient: {{ selectedAppointment?.patientName }}
 
-                            <span class="text-body fs-13 fw-normal d-block">
+                            <!-- <span class="text-body fs-13 fw-normal d-block">
                                 Patient: {{ selectedAppointment?.patientName }}
-                            </span>
+                            </span> -->
 
                         </span>
 
@@ -402,6 +402,7 @@ const dateFilter = ref("")
 const selectedAppointment = ref(null)
 const currentPage = ref(1)
 const pageSize = ref(5)
+
 
 const loadAppointments = async () => {
 
@@ -535,7 +536,10 @@ const openView = (item) => {
     selectedAppointment.value = item
 }
 
-onMounted(loadAppointments)
+onMounted(() => {
+    loadAppointments()
+
+})
 watch([search, statusFilter, dateFilter], () => {
     currentPage.value = 1
 })

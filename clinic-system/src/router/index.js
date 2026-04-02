@@ -23,6 +23,10 @@ import Profile from "../views/Profile.vue";
 import Home from "../views/patients/Home.vue";
 import PatientAppointments from "../views/patients/PatientAppointments.vue";
 import PatientDoctors from "../views/patients/PatientDoctors.vue";
+import PatientPrescriptions from "../views/patients/PatientPrescriptions.vue";
+import PatientMedicalRecords from "../views/patients/PatientMedicalRecords.vue";
+import PatientAddAppointment from "../views/patients/PatientAddAppointment.vue";
+import PatientProfile from "../views/patients/PatientProfile.vue";
 //
 import DoctorHome from "../views/doctors/DoctorHome.vue";
 import DoctorAppointments from "../views/doctors/DoctorAppointments.vue";
@@ -30,6 +34,18 @@ import DoctorExamine from "../views/doctors/DoctorExamine.vue";
 import DoctorMedicalRecordDetail from "../views/doctors/DoctorMedicalRecordDetail.vue";
 import DoctorMedicalRecords from "../views/doctors/DoctorMedicalRecords.vue";
 import DoctorProfile from "../views/doctors/DoctorProfile.vue";
+//
+import ForgetPasword from "../views/ForgetPasword.vue";
+import ResetPassword from "../views/ResetPassword.vue";
+//
+import ReceptionistHome from "../views/receptionist/ReceptionistHome.vue";
+import ReceptionistAppointments from "../views/receptionist/ReceptionistAppointments.vue";
+import ReceptionistAddAppointment from "../views/receptionist/ReceptionistAddAppointment.vue";
+import ReceptionistDoctorSchedule from "../views/receptionist/ReceptionistDoctorSchedule.vue";
+import ReceptionistProfile from "../views/receptionist/ReceptionistProfile.vue";  
+import ReceptionistPatients from "../views/receptionist/ReceptionistPatients.vue";
+import ReceptionistAddPatient from "../views/receptionist/ReceptionistAddPatient.vue";
+import ReceptionistEditPatient from "../views/receptionist/ReceptionistEditPatient.vue";
 // ================== CẤU HÌNH ROUTES ==================
 const routes = [
   {
@@ -71,80 +87,80 @@ const routes = [
     path: "/doctor-schedule",
     name: "doctor-schedule",
     component: DoctorSchedule,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/edit-doctor/:id",
     name: "edit-doctor",
     component: EditDoctor,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/patients",
     name: "patients",
     component: Patients,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/add-patient",
     name: "add-patient",
     component: AddPatient,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/edit-patient/:id",
     name: "edit-patient",
     component: EditPatient,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/appointments",
     name: "appointments",
     component: Appointments,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/add-appointment",
     name: "add-appointment",
     component: AddAppointments,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/departments",
     name: "departments",
     component: Departments,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/staff",
     name: "staff",
     component: Staff,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/add-staff",
     name: "add-staff",
     component: AddStaff,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/edit-staff/:id",
     name: "edit-staff",
     component: EditStaff,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin"] },
   },
   {
     path: "/profile",
     name: "profile",
     component: Profile,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, allowRoles: ["admin",] },
   },
   {
     path: "/patient/home",
     name: "patient-home",
     component: Home,
     meta: { requiresAuth: true, allowRoles: ["patient"] },
-  },
+  },  
   {
     path: "/patient/appointments",
     name: "patient-appointments",
@@ -156,6 +172,33 @@ const routes = [
     name: "patient-doctors",
     component: PatientDoctors,
     meta: { requiresAuth: true, allowRoles: ["patient"] },
+  },
+  {
+    path: "/patient/prescriptions/:appointmentId",
+    name: "patient-prescriptions",
+    component: PatientPrescriptions,
+    meta: { requiresAuth: true, allowRoles: ["patient"] },
+  },
+  {
+    path: "/patient/medical-records",
+    name: "patient-medical-records",
+    component: PatientMedicalRecords,
+    meta: { requiresAuth: true, allowRoles: ["patient"] },
+
+  },
+  {
+    path: "/patient/add-appointment",
+    name: "patient-add-appointment",
+    component: PatientAddAppointment,
+    meta: { requiresAuth: true, allowRoles: ["patient"] },
+
+  },
+  {
+    path: "/patient/profile",
+    name: "patient-profile",
+    component: PatientProfile,
+    meta: { requiresAuth: true, allowRoles: ["patient"] },
+
   },
   {
     path: "/doctor/home",
@@ -176,11 +219,10 @@ const routes = [
     meta: { requiresAuth: true, allowRoles: ["doctor"] },
   },
   {
-      path: "/doctor/edit-record/:recordId",
-      name: "doctor-edit-record",
-      component: DoctorExamine,
-      meta: { requiresAuth: true, allowRoles: ["doctor"] },
-
+    path: "/doctor/edit-record/:recordId",
+    name: "doctor-edit-record",
+    component: DoctorExamine,
+    meta: { requiresAuth: true, allowRoles: ["doctor"] },
   },
   {
     path: "/doctor/medical-records/:appointmentId",
@@ -199,7 +241,70 @@ const routes = [
     name: "doctor-profile",
     component: DoctorProfile,
     meta: { requiresAuth: true, allowRoles: ["doctor"] },
+  },
+  {
+    path: "/forgot-password",
+    name: "forgot-password",
+    component: ForgetPasword,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/reset-password",
+    name: "reset-password",
+    component: ResetPassword,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/receptionist/dashboard",
+    name: "receptionist-dashboard",
+    component: ReceptionistHome,
+    meta: { requiresAuth: true, allowRoles: ["receptionist"] },
+  },
+  {
+    path: "/receptionist/appointments",
+    name: "receptionist-appointments",
+    component: ReceptionistAppointments,
+    meta: { requiresAuth: true, allowRoles: ["receptionist"] },
+  },
+  {
+    path: "/receptionist/add-appointment",
+    name: "receptionist-add-appointment",
+    component: ReceptionistAddAppointment,
+    meta: { requiresAuth: true, allowRoles: ["receptionist"] },
+  },
+  {
+    path: "/receptionist/doctor-schedule",
+    name: "receptionist-doctor-schedule",
+    component: ReceptionistDoctorSchedule,
+    meta: { requiresAuth: true, allowRoles: ["receptionist"] },
+  },
+ 
+  {
+    path: "/receptionist/profile",
+    name: "receptionist-profile",
+    component: ReceptionistProfile,
+    meta: { requiresAuth: true, allowRoles: ["receptionist"] },
+  },
+  {
+    path: "/receptionist/patients",
+    name: "receptionist-patients",
+    component: ReceptionistPatients,
+    meta: { requiresAuth: true, allowRoles: ["receptionist"] },
+  },
+  {
+    path: "/receptionist/add-patient",
+    name: "receptionist-add-patient",
+    component: ReceptionistAddPatient,
+    meta: { requiresAuth: true, allowRoles: ["receptionist"] },
+
+  },
+  {
+    path: "/receptionist/edit-patient/:id",
+    name: "receptionist-edit-patient",
+    component: ReceptionistEditPatient,
+    meta: { requiresAuth: true, allowRoles: ["receptionist"] },
   }
+  
 ];
 
 // ================== TẠO ROUTER ==================
@@ -217,7 +322,12 @@ router.beforeEach(async (to, from, next) => {
 
   // CASE 1 — chưa login
   if (!token) {
-    if (to.name !== "login") return next({ name: "login" });
+    const publicPages = ["login", "forgot-password", "reset-password"];
+
+    if (!publicPages.includes(to.name)) {
+      return next({ name: "login" });
+    }
+
     return next();
   }
 
@@ -233,8 +343,10 @@ router.beforeEach(async (to, from, next) => {
   // CASE 3 — Đã login → không quay lại trang login
   if (token && to.name === "login") {
     if (role === "admin") return next({ name: "admin-dashboard" });
-    if (role === "doctor") return next({ name: "doctor-dashboard" });
-    return next({ name: "patient-home" }); // sửa ở đây
+    if (role === "doctor") return next({ name: "doctor-home" });
+    if (role === "receptionist")
+      return next({ name: "receptionist-dashboard" });
+    return next({ name: "patient-home" });
   }
 
   // CASE 4 — Route yêu cầu login
@@ -245,8 +357,10 @@ router.beforeEach(async (to, from, next) => {
   // CASE 5 — Kiểm tra role (chỉ khi role có tồn tại)
   if (role && to.meta.allowRoles && !to.meta.allowRoles.includes(role)) {
     if (role === "admin") return next({ name: "admin-dashboard" });
-    if (role === "doctor") return next({ name: "doctor-dashboard" });
-    return next({ name: "patient-home" }); // sửa ở đây
+    if (role === "doctor") return next({ name: "doctor-home" });
+    if (role === "receptionist")
+      return next({ name: "receptionist-dashboard" });
+    return next({ name: "patient-home" });
   }
 
   next();

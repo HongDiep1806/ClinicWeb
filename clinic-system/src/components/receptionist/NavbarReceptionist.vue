@@ -6,7 +6,7 @@
       <div class="d-flex align-items-center gap-2">
 
         <!-- Logo -->
-        <router-link to="/patient/home" class="logo">
+        <router-link to="/receptionist/dashboard" class="logo">
 
           <span class="logo-light">
             <span class="logo-lg">
@@ -26,12 +26,12 @@
 
         </router-link>
 
-        <!-- Mobile -->
+        <!-- Mobile sidebar -->
         <a id="mobile_btn" class="mobile-btn" href="#sidebar">
           <i class="ti ti-menu-deep fs-24"></i>
         </a>
 
-        <!-- Toggle -->
+        <!-- Sidebar toggle -->
         <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn2">
           <i class="ti ti-arrow-right"></i>
         </button>
@@ -43,20 +43,21 @@
 
         <!-- Appointments -->
         <div class="header-item me-2">
-          <router-link to="/patient/appointments" class="btn topbar-link">
+
+          <router-link to="/receptionist/appointments" class="btn topbar-link">
             <i class="ti ti-calendar-due"></i>
           </router-link>
+
         </div>
 
         <!-- USER -->
         <div class="dropdown profile-dropdown d-flex align-items-center">
 
-          <a class="dropdown-toggle drop-arrow-none d-flex align-items-center"
-             data-bs-toggle="dropdown">
+          <a href="javascript:void(0);" class="dropdown-toggle drop-arrow-none d-flex align-items-center"
+            data-bs-toggle="dropdown">
 
-            <div v-if="authStore.user?.fullName"
-                 class="avatar-circle-small me-2"
-                 :style="{ backgroundColor: getColor(authStore.user.fullName) }">
+            <div v-if="authStore.user?.fullName" class="avatar-circle-small me-2"
+              :style="{ backgroundColor: getColor(authStore.user.fullName) }">
               {{ getInitial(authStore.user.fullName) }}
             </div>
 
@@ -66,14 +67,12 @@
 
           </a>
 
-          <!-- Dropdown -->
+          <!-- dropdown -->
           <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
 
             <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
 
-              <div v-if="authStore.user?.fullName"
-                   class="avatar-circle-small me-2"
-                   :style="{ backgroundColor: getColor(authStore.user.fullName) }">
+              <div class="avatar-circle-small me-2" :style="{ backgroundColor: getColor(authStore.user.fullName) }">
                 {{ getInitial(authStore.user.fullName) }}
               </div>
 
@@ -83,22 +82,24 @@
                 </p>
 
                 <span class="fs-13 text-muted">
-                  Patient
+                  Receptionist
                 </span>
               </div>
 
             </div>
 
-            <router-link class="dropdown-item" to="/patient/profile">
+            <router-link class="dropdown-item" to="/receptionist/profile">
               <i class="ti ti-user-circle me-1"></i>
               Profile
             </router-link>
 
             <div class="pt-2 mt-2 border-top">
+
               <button class="dropdown-item text-danger" @click="handleLogout">
                 <i class="ti ti-logout me-1"></i>
                 Log Out
               </button>
+
             </div>
 
           </div>
@@ -112,9 +113,14 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
+
+import { computed, onMounted, ref } from "vue"
 import { useAuthStore } from "../../stores/auth"
 import { useRouter } from "vue-router"
+
+defineOptions({
+  name: "NavbarReceptionist"
+})
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -122,7 +128,7 @@ const authStore = useAuthStore()
 /* USER */
 
 const userName = computed(() =>
-  authStore.user?.fullName || "Patient"
+  authStore.user?.fullName || "Receptionist"
 )
 
 const getInitial = (name) => {
@@ -130,9 +136,17 @@ const getInitial = (name) => {
 }
 
 const getColor = (name) => {
-  const colors = ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b"]
+
+  const colors = [
+    "#4e73df",
+    "#1cc88a",
+    "#36b9cc",
+    "#f6c23e",
+    "#e74a3b",
+  ]
 
   let hash = 0
+
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash)
   }
@@ -143,13 +157,47 @@ const getColor = (name) => {
 /* LOGOUT */
 
 const handleLogout = async () => {
+
   await authStore.logout()
+
   router.push("/login")
+
 }
+
+/* DARK MODE */
+
+const isDark = ref(false)
+
+const toggleDarkMode = () => {
+
+  document.body.classList.toggle("dark")
+
+  isDark.value = document.body.classList.contains("dark")
+
+  localStorage.setItem(
+    "theme",
+    isDark.value ? "dark" : "light"
+  )
+
+}
+
+/* LOAD THEME */
+
+onMounted(() => {
+
+  const savedTheme = localStorage.getItem("theme")
+
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark")
+    isDark.value = true
+  }
+
+})
+
 </script>
 
 <style>
-.profile-dropdown > a {
+.profile-dropdown>a {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;

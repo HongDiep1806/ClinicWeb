@@ -52,6 +52,8 @@
               <option value="Cancelled">Cancelled</option>
               <option value="NoShow">NoShow</option>
             </select>
+
+
           </div>
 
           <!-- START DATE -->
@@ -371,6 +373,12 @@
               <option value="Cancelled">Cancelled</option>
               <option value="NoShow">NoShow</option>
             </select>
+
+            <div class="mb-3" v-if="editModel.status === 'Cancelled'">
+              <label class="fw-semibold">Cancel Reason</label>
+              <textarea class="form-control" v-model="editModel.reason" placeholder="Enter cancellation reason..."
+                required></textarea>
+            </div>
           </div>
 
 
@@ -516,10 +524,34 @@ export default {
     }
     ,
     async submitEdit() {
+      // ===== TIME VALIDATION =====
+      const now = new Date()
+      const apptDate = new Date(this.editModel.date)
+
+      let shiftEnd
+
+      // xác định ca dựa trên giờ
+      const hour = apptDate.getHours()
+
+      if (hour === 8) {
+        // Morning
+        shiftEnd = new Date(apptDate)
+        shiftEnd.setHours(12, 0, 0, 0)
+      } else {
+        // Afternoon
+        shiftEnd = new Date(apptDate)
+        shiftEnd.setHours(17, 0, 0, 0)
+      }
+
+      // ❌ không cho confirm nếu quá giờ
+      if (this.editModel.status === "Confirmed" && now > shiftEnd) {
+        return this.toast.error("Cannot confirm past shift")
+      }
       try {
         await updateAppointmentStatus({
           appointmentId: this.editModel.appointmentId,
-          status: this.editModel.status
+          status: this.editModel.status,
+          reason: this.editModel.reason
         });
 
         // Cập nhật ngay UI

@@ -271,7 +271,9 @@
       </div>
 
       <h6 class="bg-light py-2 px-3 fw-bold mb-0 text-uppercase fs-12">Appointment Info</h6>
+
       <div class="px-3 my-4">
+
         <p class="text-dark mb-3 fw-semibold d-flex justify-content-between">
           Created At
           <span class="text-body fw-normal small">
@@ -285,6 +287,15 @@
             {{ selectedAppointment?.reason || 'No additional notes provided.' }}
           </div>
         </div>
+
+        <!-- 🔥 BUTTON ĐẶT Ở ĐÂY -->
+        <div class="mt-4 d-grid" v-if="selectedAppointment?.status === 'Completed'">
+          <button class="btn btn-primary" @click="goToPrescription(selectedAppointment?.appointmentId)">
+            <i class="ti ti-prescription me-1"></i>
+            View Prescription
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -318,8 +329,16 @@
             Keep
           </button>
 
-          <button class="btn btn-danger" @click="confirmCancel">
-            Yes, Cancel
+          <button class="btn btn-danger" @click="confirmCancel" :disabled="isCancelling">
+
+            <span v-if="isCancelling">
+              <span class="spinner-border spinner-border-sm me-1"></span>
+              Cancelling...
+            </span>
+
+            <span v-else>
+              Yes, Cancel
+            </span>
           </button>
         </div>
 
@@ -435,11 +454,31 @@ const appointments = ref([])
 const departments = ref([]);  // Dùng `ref` để khai báo mảng departments
 const appointmentToCancel = ref(null)
 const toastMessage = ref("")
+const isCancelling = ref(false)
 
 const q = ref("")
 const fromDate = ref("")
 const toDate = ref("")
 const selectedAppointment = ref(null)
+const goToPrescription = (appointmentId) => {
+  if (!appointmentId) return
+
+  if (selectedAppointment.value?.status !== "Completed") {
+    showToast("Prescription is only available after the appointment is completed", "warning")
+    return
+  }
+
+  const offcanvasEl = document.getElementById("view_details")
+  const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl)
+
+  if (offcanvas) {
+    offcanvas.hide()
+  }
+
+  setTimeout(() => {
+    router.push(`/patient/prescriptions/${appointmentId}`)
+  }, 200)
+}
 
 const openView = (item) => {
   selectedAppointment.value = item
@@ -489,11 +528,13 @@ watch(toDate, (newTo) => {
 
   if (from && to && to < from) {
     showToast("To date cannot be before From date", "warning")
-    toDate.value = "" // reset field vừa nhập
+    toDate.value = ""
   }
 })
 const confirmCancel = async () => {
   if (!appointmentToCancel.value) return
+
+  isCancelling.value = true
 
   try {
     await updateAppointmentStatus({
@@ -502,11 +543,12 @@ const confirmCancel = async () => {
     })
 
     showToast("Appointment cancelled successfully", "success")
-
     await loadAppointments()
 
   } catch (error) {
     showToast("Cancel failed. Please try again.", "danger")
+  } finally {
+    isCancelling.value = false
   }
 
   const modal = bootstrap.Modal.getInstance(
@@ -621,7 +663,17 @@ const filteredAppointments = computed(() => {
 
       return true
     })
-    .sort((a, b) => new Date(b.date) - new Date(a.date)) // recent first
+    .sort((a, b) => {
+      const createdA = new Date(a.createdAt || 0)
+      const createdB = new Date(b.createdAt || 0)
+
+      if (createdB - createdA !== 0) {
+        return createdB - createdA
+      }
+
+      // fallback nếu createdAt bằng nhau
+      return new Date(b.date || 0) - new Date(a.date || 0)
+    })
 })
 
 const resetFilters = () => {
@@ -690,8 +742,8 @@ watch(
       return
     }
 
-    const weekday = new Date(date).getDay()
-
+    const day = new Date(date).getDay()
+    const weekday = day === 0 ? 6 : day - 1
     try {
       const res = await getDoctorsByWeekday(weekday)
 
@@ -726,6 +778,55 @@ const submitCreate = async () => {
     return
   }
 
+  // ===== DUPLICATE CHECK =====
+  const isDuplicate = appointments.value.some(a => {
+
+    if (a.status === "Cancelled") return false
+
+    if (a.patientId !== authStore.user.userId) return false
+    if (a.doctorId !== form.value.doctorId) return false
+
+    const d = new Date(a.date)
+    const selected = new Date(form.value.date)
+
+    const sameDate =
+      d.getFullYear() === selected.getFullYear() &&
+      d.getMonth() === selected.getMonth() &&
+      d.getDate() === selected.getDate()
+
+    if (!sameDate) return false
+
+    const hour = d.getHours()
+    const apptShift = hour < 12 ? "morning" : "afternoon"
+
+    return apptShift === form.value.shift
+  })
+
+  if (isDuplicate) {
+    return showToast("You already booked this shift", "danger")
+  }
+
+  const now = new Date()
+
+  const shiftStart =
+    form.value.shift === "morning"
+      ? new Date(form.value.date + "T08:00:00")
+      : new Date(form.value.date + "T13:00:00")
+
+  const shiftEnd =
+    form.value.shift === "morning"
+      ? new Date(form.value.date + "T12:00:00")
+      : new Date(form.value.date + "T17:00:00")
+
+  // ❌ quá ca
+  if (now > shiftEnd) {
+    return showToast("This shift has already ended", "danger")
+  }
+
+  // ❌ đã bắt đầu
+  if (now > shiftStart && shiftStart.toDateString() === now.toDateString()) {
+    return showToast("This shift already started", "danger")
+  }
   creating.value = true
 
   try {
@@ -746,7 +847,26 @@ const submitCreate = async () => {
     modal.hide()
 
   } catch (err) {
-    showToast("Booking failed. Please try again.", "danger")
+    const res = err?.response?.data
+
+    const text =
+      typeof res === "string"
+        ? res.toLowerCase()
+        : JSON.stringify(res).toLowerCase()
+
+    let message = "Booking failed. Please try again."
+
+    if (text.includes("already")) {
+      message = "You already booked this shift"
+    }
+    else if (text.includes("not scheduled")) {
+      message = "Doctor is not working this shift"
+    }
+    else if (res?.message) {
+      message = res.message
+    }
+
+    showToast(message, "danger")
   }
 
   creating.value = false

@@ -83,6 +83,25 @@
 
         </div>
         <!-- PRESCRIPTION HEADER -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+
+            <div class="row">
+
+              <div class="col-md-6">
+                <div><strong>Patient:</strong> {{ medicalRecord?.appointment?.patient?.fullName || "N/A" }}</div>
+                <div><strong>Patient ID:</strong> #PT{{ medicalRecord?.appointment?.patient?.userId }}</div>
+              </div>
+
+              <div class="col-md-6 text-end">
+                <div><strong>Appointment:</strong> #AP{{ medicalRecord?.appointmentId }}</div>
+                <div><strong>Date:</strong> {{ formatDate(medicalRecord?.appointment?.date) }}</div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
 
         <!-- <div class="card shadow-sm mb-4">
 
@@ -116,6 +135,17 @@
 
         </div> -->
 
+        <div class="card shadow-sm mb-4">
+          <div class="card-header">
+            <h6 class="fw-bold mb-0">Diagnosis</h6>
+          </div>
+
+          <div class="card-body">
+            <div class="text-muted small">
+              {{ medicalRecord?.diagnosisDescription || "No diagnosis provided" }}
+            </div>
+          </div>
+        </div>
         <!-- PRESCRIPTION TABLE -->
 
         <div class="card shadow-sm">
@@ -271,10 +301,32 @@ const authStore = useAuthStore()
 
 const prescriptions = ref([])
 const loading = ref(false)
+const medicalRecord = ref(null)
+const loadMedicalRecord = async () => {
+
+  try {
+    const appointmentId = route.params.appointmentId
+    const res = await getMedicalRecordByAppointment(appointmentId)
+
+    medicalRecord.value = res.data
+  }
+  catch (err) {
+    console.error("Load medical record error", err)
+  }
+
+}
 
 const today = new Date().toLocaleDateString("en-GB")
 const printPrescription = () => {
   window.print()
+}
+const formatDate = (date) => {
+  if (!date) return "-"
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  })
 }
 
 /* fake doctor name (có thể lấy từ authStore nếu có) */
@@ -331,8 +383,10 @@ const goToEdit = async () => {
 
 }
 
-onMounted(loadPrescriptions)
-
+onMounted(() => {
+  loadPrescriptions()
+  loadMedicalRecord()
+})
 </script>
 
 <style scoped>

@@ -148,7 +148,7 @@ export const useAuthStore = defineStore("auth", {
       try {
         await axios.post(
           // "https://clinic-management-system-production-2598.up.railway.app/api/Auth/logout",
-          "https://localhost:7205/api/Auth/logout",
+          "https://clinic.sys/api/Auth/logout",
           {},
           { withCredentials: true }
         );
@@ -172,7 +172,7 @@ export const useAuthStore = defineStore("auth", {
       try {
         const res = await axios.post(
           // "https://clinic-management-system-production-2598.up.railway.app/api/Auth/refresh",
-          "https://localhost:7205/api/Auth/refresh",
+          "https://clinic.sys/api/Auth/refresh",
 
           {},
           { withCredentials: true }

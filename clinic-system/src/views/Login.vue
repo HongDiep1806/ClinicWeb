@@ -59,11 +59,10 @@
                     <!-- Remember + Forgot -->
                     <!-- Forgot Password (center) -->
                     <div class="d-flex justify-content-center mb-3">
-                      <a href="#" class="text-danger fw-semibold">
+                      <router-link to="/forgot-password" class="text-danger fw-semibold">
                         Forgot Password?
-                      </a>
+                      </router-link>
                     </div>
-
                     <!-- Button -->
                     <div class="mb-2">
                       <button type="submit" class="btn bg-primary text-white w-100" :disabled="loading">
@@ -117,8 +116,7 @@ export default {
         // ⭐ MUST HAVE: cookie tự động lưu refreshToken vào HttpOnly Cookie
         const response = await axios.post(
           // "https://clinic-management-system-production-2598.up.railway.app/api/Auth/login",
-          "https://localhost:7205/api/Auth/login",
-
+          "https://clinic.sys/api/Auth/login",
           {
             email: this.email,
             password: this.password,

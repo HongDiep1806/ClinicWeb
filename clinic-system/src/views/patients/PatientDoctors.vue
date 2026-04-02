@@ -294,6 +294,14 @@ import { getScheduleByDoctor } from "../../services/scheduleService"
 import { bookAppointment } from "../../services/appointmentService"
 import { useAuthStore } from "../../stores/auth"
 import { watch } from "vue"
+import { getPatientAppointments } from "../../services/appointmentService"
+
+const appointments = ref([])
+
+const loadAppointments = async () => {
+    const res = await getPatientAppointments(authStore.user.userId)
+    appointments.value = res.data || []
+}
 
 
 
@@ -335,6 +343,52 @@ const submitBooking = async () => {
         ).show()
         return
     }
+    // ===== DUPLICATE CHECK =====
+    const isDuplicate = appointments.value?.some(a => {
+
+        if (a.status === "Cancelled") return false
+
+        if (a.patientId !== authStore.user.userId) return false
+        if (a.doctorId !== bookingDoctor.value.userId) return false
+
+        const d = new Date(a.date)
+        const selected = new Date(form.value.date)
+
+        const sameDate =
+            d.getFullYear() === selected.getFullYear() &&
+            d.getMonth() === selected.getMonth() &&
+            d.getDate() === selected.getDate()
+
+        if (!sameDate) return false
+
+        const hour = d.getHours()
+        const apptShift = hour < 12 ? "morning" : "afternoon"
+
+        return apptShift === form.value.shift
+    })
+
+    if (isDuplicate) {
+        return showErrorToast("You already booked this shift")
+    }
+    const now = new Date()
+
+    const shiftStart =
+        form.value.shift === "morning"
+            ? new Date(form.value.date + "T08:00:00")
+            : new Date(form.value.date + "T13:00:00")
+
+    const shiftEnd =
+        form.value.shift === "morning"
+            ? new Date(form.value.date + "T12:00:00")
+            : new Date(form.value.date + "T17:00:00")
+
+    if (now > shiftEnd) {
+        return showErrorToast("This shift has already ended")
+    }
+
+    if (now > shiftStart && shiftStart.toDateString() === now.toDateString()) {
+        return showErrorToast("This shift already started")
+    }
 
     try {
 
@@ -344,6 +398,8 @@ const submitBooking = async () => {
             date: buildDateTime(),
             reason: form.value.reason || null
         })
+        await loadAppointments()
+
 
         bootstrap.Modal.getInstance(
             document.getElementById("bookModal")
@@ -355,15 +411,23 @@ const submitBooking = async () => {
 
     } catch (err) {
 
-        let message = "Booking failed"
+        let message = "Booking failed. Please try again."
 
-        if (err?.response?.data) {
+        const res = err?.response?.data
 
-            const text = err.response.data.toString().toLowerCase()
+        const text =
+            typeof res === "string"
+                ? res.toLowerCase()
+                : res?.message?.toLowerCase() || ""
 
-            if (text.includes("already")) {
-                message = "You already have an appointment on this day"
-            }
+        if (text.includes("already") || text.includes("exist")) {
+            message = "You already booked this shift"
+        }
+        else if (text.includes("not scheduled")) {
+            message = "Doctor is not working this shift"
+        }
+        else if (res?.message) {
+            message = res.message
         }
 
         showErrorToast(message)
@@ -524,6 +588,7 @@ const goToBook = async (doc) => {
 onMounted(async () => {
     await loadDepartments()
     await loadDoctors()
+    await loadAppointments()
 })
 watch(availableShift, (val) => {
     form.value.shift = val || ""
